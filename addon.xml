@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<addon id="plugin.video.flix" name="Flix" provider-name="i96751414" version="0.0.1">
+    <requires>
+        <import addon="xbmc.python" version="2.24.0"/>
+        <import addon="xbmc.addon" version="16.0.0"/>
+        <import addon="script.module.requests" version="2.22.0"/>
+        <import addon="script.module.routing" version="0.2.3"/>
+        <import addon="script.module.simplecache" version="1.0.18"/>
+        <import addon="script.module.tmdbsimple" version="2.2.0"/>
+    </requires>
+    <extension point="xbmc.python.pluginsource" library="navigation.py">
+        <provides>video</provides>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <platform>all</platform>
+        <license>See https://github.com/i96751414/plugin.video.flix/blob/master/LICENSE</license>
+        <source>https://github.com/i96751414/plugin.video.flix</source>
+        <summary lang="en">Flix - A movie scraper for Kodi</summary>
+        <description lang="en">Flix is a movie scraper which allows for custom providers.</description>
+        <platform>all</platform>
+        <news>
+        </news>
+        <assets>
+            <icon>icon.png</icon>
+            <screenshot>resources/images/screenshot-1.png</screenshot>
+            <screenshot>resources/images/screenshot-2.png</screenshot>
+            <screenshot>resources/images/screenshot-3.png</screenshot>
+        </assets>
+    </extension>
+</addon>
