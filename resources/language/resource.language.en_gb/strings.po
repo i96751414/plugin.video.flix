@@ -42,6 +42,10 @@ msgctxt "#30005"
 msgid "Install YouTube add-on"
 msgstr ""
 
+msgctxt "#30006"
+msgid "Providers timeout (seconds)"
+msgstr ""
+
 # Navigation
 msgctxt "#30100"
 msgid "Discover"
@@ -77,4 +81,8 @@ msgstr ""
 
 msgctxt "#30108"
 msgid "Trailer not found!"
+msgstr ""
+
+msgctxt "#30109"
+msgid "Providers can't be called"
 msgstr ""

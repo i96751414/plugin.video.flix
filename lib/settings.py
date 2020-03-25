@@ -15,3 +15,7 @@ def prefer_original_titles():
 
 def get_language():
     return get_setting("language")
+
+
+def get_providers_timeout():
+    return get_int_setting("providers_timeout")

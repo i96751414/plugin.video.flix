@@ -11,10 +11,12 @@
     <extension point="xbmc.python.pluginsource" library="navigation.py">
         <provides>video</provides>
     </extension>
+    <extension point="xbmc.python.module" library="lib/provider"/>
     <extension point="xbmc.addon.metadata">
         <platform>all</platform>
         <license>See https://github.com/i96751414/plugin.video.flix/blob/master/LICENSE</license>
         <source>https://github.com/i96751414/plugin.video.flix</source>
+        <language>en</language>
         <summary lang="en">Flix - A movie scraper for Kodi</summary>
         <description lang="en">Flix is a movie scraper which allows for custom providers.</description>
         <platform>all</platform>

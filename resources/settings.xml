@@ -8,6 +8,7 @@
         <setting id="language" label="30003" type="select" default="en"
                  values="ar-AE|ar-SA|bg|bn|ca|ch|cs|da|de|el|en|eo|es-ES|es-MX|eu|fa|fi|fr-CA|fr-FR|he|hi|hu|id|it|ja|ka|kn|ko|lt|ml|nb|nl|no|pl|pt-BR|pt-PT|ro|ru|sk|sl|sr|sv|ta|te|th|tr|uk|vi|zh-CN|zh-TW"/>
         <setting id="prefer_original_titles" type="bool" label="30004" default="true"/>
+        <setting id="providers_timeout" type="slider" label="30006" option="int" range="10,1,30" default="10"/>
         <setting label="30005" type="action" action="InstallAddon(plugin.video.youtube)"
                  visible="!System.HasAddon(plugin.video.youtube)"/>
     </category>
