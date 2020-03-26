@@ -8,7 +8,7 @@ import xbmc
 import xbmcaddon
 import xbmcgui
 
-__all__ = ["ADDON_ID", "ADDON_ID", "ADDON_NAME", "PY3", "Provider", "log"]
+__all__ = ["ADDON_ID", "ADDON_ID", "ADDON_NAME", "PY3", "Provider", "ProviderResult", "log"]
 
 ADDON = xbmcaddon.Addon()
 ADDON_ID = ADDON.getAddonInfo("id")
@@ -57,6 +57,29 @@ def send_to_providers(providers, method, *args, **kwargs):
         xbmc.executebuiltin("RunScript({}, {}, {}, {})".format(provider, ADDON_ID, method, data_b64))
 
 
+def send_to_provider(provider, method, *args, **kwargs):
+    send_to_providers((provider,), method, *args, **kwargs)
+
+
+def _setter_and_getter(attribute):
+    def setter(self, value):
+        self[attribute] = value
+
+    def getter(self):
+        return self.get(attribute)
+
+    return setter, property(getter)
+
+
+class ProviderResult(dict):
+    set_heading, heading = _setter_and_getter("heading")
+    set_label1, label1 = _setter_and_getter("label1")
+    set_label2, label2 = _setter_and_getter("label2")
+    set_icon, icon = _setter_and_getter("icon")
+    set_url, url = _setter_and_getter("url")
+    set_provider_data, provider_data = _setter_and_getter("provider_data")
+
+
 class Provider(object):
     def __init__(self):
         self._methods = {}
@@ -65,6 +88,67 @@ class Provider(object):
                 attr = getattr(self, name)
                 if callable(attr):
                     self._methods[name] = attr
+
+    def search(self, query):
+        """
+        Perform a raw search.
+
+        :param query: The query for performing the search.
+        :type query: str
+        :return: List of search results.
+        :rtype: list[ProviderResult]
+        """
+        raise NotImplementedError("'search' method must be implemented")
+
+    def search_movie(self, tmdb_id, title, year, titles):
+        """
+        Search a movie.
+
+        :param tmdb_id: The movie TMDB id.
+        :type tmdb_id: str
+        :param title: The movie title.
+        :type title: str
+        :param year: The movie release year.
+        :type year: int
+        :param titles: Dictionary containing key-pairs of country and title, respectively.
+        :type titles: dict[str, str]
+        :return: List of search results.
+        :rtype: list[ProviderResult]
+        """
+        raise NotImplementedError("'search_movie' method must be implemented")
+
+    def search_episode(self, tmdb_id, show_title, season_number, episode_number, titles):
+        """
+        Search an episode.
+
+        :param tmdb_id: The tv show TMDB id.
+        :type tmdb_id: str
+        :param show_title: The show title.
+        :type show_title: str
+        :param season_number: The season number.
+        :type season_number: int
+        :param episode_number: The episode number.
+        :type episode_number: int
+        :param titles: Dictionary containing key-pairs of country and title, respectively.
+        :type titles: dict[str, str]
+        :return: List of search results.
+        :rtype: list[ProviderResult]
+        """
+        raise NotImplementedError("'search_episode' method must be implemented")
+
+    def resolve(self, provider_data):
+        """
+        Resolve method is only called in cases where the provider has not set the `url` parameter of
+        :class:`ProviderResult` but did set the `provider_data` parameter (which will be used here).
+        This may be useful in cases where the `url` can't be obtained right away.
+
+        It is also expected a call to :func:`xbmcplugin.setResolvedUrl` from this method, otherwise
+        the player will not start.
+
+        :param provider_data: `provided_data` from result (:class:`ProviderResult`) .
+        :type provider_data: any
+        """
+        raise NotImplementedError("'resolve' method must be implemented")
 
     @staticmethod
     def ping():
