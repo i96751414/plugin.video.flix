@@ -1,5 +1,5 @@
 # noinspection PyProtectedMember
-from lib.provider.flix import get_providers, send_to_providers, ProviderListener
+from lib.api.flix.provider import get_providers, send_to_providers, ProviderListener
 from lib.settings import get_providers_timeout
 
 

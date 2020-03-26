@@ -1,5 +1,6 @@
 import base64
 import json
+import logging
 import sys
 import threading
 import time
@@ -8,37 +9,12 @@ import xbmc
 import xbmcaddon
 import xbmcgui
 
-__all__ = ["ADDON_ID", "ADDON_ID", "ADDON_NAME", "PY3", "Provider", "ProviderResult", "log"]
+from .kodi import ADDON_ID, ADDON_NAME, get_installed_addons, notify_all, set_logger
+from .utils import bytes_to_str
 
-ADDON = xbmcaddon.Addon()
-ADDON_ID = ADDON.getAddonInfo("id")
-ADDON_NAME = ADDON.getAddonInfo("name")
-
-PY3 = sys.version_info.major >= 3
+__all__ = ["ProviderResult", "Provider"]
 
 
-def log(msg, *args, **kwargs):
-    xbmc.log("[{}] {}".format(ADDON_ID, msg.format(*args)), **kwargs)
-
-
-def execute_json_rpc(method, rpc_version="2.0", rpc_id=1, **params):
-    return json.loads(xbmc.executeJSONRPC(json.dumps(dict(
-        jsonrpc=rpc_version, method=method, params=params, id=rpc_id))))
-
-
-def notify_all(sender, message, data=None):
-    params = {"sender": sender, "message": message}
-    if data is not None:
-        params["data"] = data
-    return execute_json_rpc("JSONRPC.NotifyAll", **params).get("result") == "OK"
-
-
-def get_installed_addons(addon_type="", content="unknown", enabled="all"):
-    data = execute_json_rpc("Addons.GetAddons", type=addon_type, content=content, enabled=enabled)
-    return [(a["addonid"], a["type"]) for a in data["result"]["addons"]]
-
-
-# noinspection PyTypeChecker
 def get_providers():
     return [p_id for p_id, _ in get_installed_addons(addon_type="xbmc.python.script", enabled=True)
             if p_id.startswith("script.flix.")]
@@ -50,9 +26,7 @@ def send_to_providers(providers, method, *args, **kwargs):
         data["args"] = args
     if kwargs:
         data["kwargs"] = kwargs
-    data_b64 = base64.b64encode(json.dumps(data))
-    if PY3:
-        data_b64 = data_b64.decode()
+    data_b64 = bytes_to_str(base64.b64encode(json.dumps(data)))
     for provider in providers:
         xbmc.executebuiltin("RunScript({}, {}, {}, {})".format(provider, ADDON_ID, method, data_b64))
 
@@ -82,6 +56,7 @@ class ProviderResult(dict):
 
 class Provider(object):
     def __init__(self):
+        self.logger = set_logger("provider", level=logging.INFO)
         self._methods = {}
         for name in dir(self):
             if not name.startswith("_") and name != "register":
@@ -160,9 +135,9 @@ class Provider(object):
         return ADDON_ID
 
     def register(self):
-        log("Running with args: {}", sys.argv, level=xbmc.LOGDEBUG)
+        self.logger.debug("Running with args: %s", sys.argv)
         if len(sys.argv) != 4:
-            log("Expecting 4 arguments. Got {}", sys.argv, level=xbmc.LOGERROR)
+            self.logger.error("Expecting 4 arguments. Got %s", sys.argv)
             xbmcgui.Dialog().notification(ADDON_NAME, xbmcaddon.Addon("plugin.video.flix").getLocalizedString(30109))
             return
 
@@ -171,9 +146,9 @@ class Provider(object):
             data = json.loads(base64.b64decode(data_b64))
             value = self._methods[method](*data.get("args", []), **data.get("kwargs", {}))
             if not notify_all(ADDON_ID, "{}.{}".format(sender, method), value):
-                log("Failed sending provider data", level=xbmc.LOGERROR)
+                self.logger.error("Failed sending provider data")
         else:
-            log("Unknown method provided '{}'. Expecting one of {}", method, self._methods.keys(), level=xbmc.LOGERROR)
+            self.logger.error("Unknown method provided '%s'. Expecting one of %s", method, self._methods.keys())
             raise ValueError("Unknown method provided")
 
 
@@ -188,13 +163,13 @@ class ProviderListener(xbmc.Monitor):
         self._start_time = time.time()
 
     def onNotification(self, sender, method, data):
-        log("Received notification with sender={}, method={}, data={}", sender, method, data, level=xbmc.LOGDEBUG)
+        logging.debug("Received notification with sender=%s, method=%s, data=%s", sender, method, data)
         with self._lock:
             if method == self._method and self._waiting.get(sender, False):
                 try:
                     self._data[sender] = json.loads(data)
                 except Exception as e:
-                    log("Unable to get data from sender '{}': {}", sender, e, level=xbmc.LOGERROR)
+                    logging.error("Unable to get data from sender '%s': %s", sender, e)
                 else:
                     self._waiting[sender] = False
 

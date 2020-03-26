@@ -1,10 +1,11 @@
+import json
 import logging
 
 import xbmc
 import xbmcaddon
 import xbmcgui
 
-from lib.utils import PY3, str_to_unicode
+from .utils import str_to_unicode, PY3
 
 ADDON = xbmcaddon.Addon()
 ADDON_NAME = ADDON.getAddonInfo("name")
@@ -44,6 +45,23 @@ def set_boolean_setting(setting, value):
     set_setting(setting, "true" if value else "false")
 
 
+def execute_json_rpc(method, rpc_version="2.0", rpc_id=1, **params):
+    return json.loads(xbmc.executeJSONRPC(json.dumps(dict(
+        jsonrpc=rpc_version, method=method, params=params, id=rpc_id))))
+
+
+def notify_all(sender, message, data=None):
+    params = {"sender": sender, "message": message}
+    if data is not None:
+        params["data"] = data
+    return execute_json_rpc("JSONRPC.NotifyAll", **params).get("result") == "OK"
+
+
+def get_installed_addons(addon_type="", content="unknown", enabled="all"):
+    data = execute_json_rpc("Addons.GetAddons", type=addon_type, content=content, enabled=enabled)
+    return [(a["addonid"], a["type"]) for a in data["result"]["addons"]]
+
+
 class KodiLogHandler(logging.StreamHandler):
     levels = {
         logging.CRITICAL: xbmc.LOGFATAL,
@@ -69,3 +87,4 @@ def set_logger(name=None, level=logging.INFO):
     logger = logging.getLogger(name)
     logger.addHandler(KodiLogHandler())
     logger.setLevel(level)
+    return logger

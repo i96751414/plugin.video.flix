@@ -11,7 +11,7 @@
     <extension point="xbmc.python.pluginsource" library="navigation.py">
         <provides>video</provides>
     </extension>
-    <extension point="xbmc.python.module" library="lib/provider"/>
+    <extension point="xbmc.python.module" library="lib/api"/>
     <extension point="xbmc.addon.metadata">
         <platform>all</platform>
         <license>See https://github.com/i96751414/plugin.video.flix/blob/master/LICENSE</license>

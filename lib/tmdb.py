@@ -1,7 +1,7 @@
 import tmdbsimple
 import xbmcgui
 
-from lib.kodi import ADDON_ID
+from lib.api.flix.kodi import ADDON_ID
 from lib.kodi_cache import KodiCache
 from lib.settings import is_cache_enabled, prefer_original_titles, get_language
 
@@ -202,8 +202,8 @@ def get_movie_info(data):
     return title, info, art
 
 
-def movie_to_list_item(show_data):
-    title, info, art = get_movie_info(show_data)
+def movie_to_list_item(movie_data):
+    title, info, art = get_movie_info(movie_data)
     list_item = xbmcgui.ListItem(title)
     list_item.setInfo("video", info)
     list_item.setArt(art)

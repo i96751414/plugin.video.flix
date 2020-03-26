@@ -1,4 +1,4 @@
-from lib.kodi import get_boolean_setting, get_int_setting, get_setting
+from lib.api.flix.kodi import get_boolean_setting, get_int_setting, get_setting
 
 
 def is_cache_enabled():

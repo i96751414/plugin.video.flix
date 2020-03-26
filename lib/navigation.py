@@ -8,7 +8,7 @@ from xbmcgui import ListItem, Dialog
 from xbmcplugin import addDirectoryItem, endOfDirectory, setContent
 
 from lib import tmdb
-from lib.kodi import ADDON_PATH, set_logger, notification, translate
+from lib.api.flix.kodi import ADDON_PATH, set_logger, notification, translate
 from lib.settings import get_language
 
 MOVIES_TYPE = "movies"
