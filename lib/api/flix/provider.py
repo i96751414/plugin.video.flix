@@ -46,7 +46,6 @@ def _setter_and_getter(attribute):
 
 
 class ProviderResult(dict):
-    set_heading, heading = _setter_and_getter("heading")
     set_label1, label1 = _setter_and_getter("label1")
     set_label2, label2 = _setter_and_getter("label2")
     set_icon, icon = _setter_and_getter("icon")
