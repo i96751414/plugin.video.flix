@@ -8,7 +8,7 @@ from xbmcgui import ListItem, Dialog
 from xbmcplugin import addDirectoryItem, endOfDirectory, setContent
 
 from lib import tmdb
-from lib.api.flix.kodi import ADDON_PATH, set_logger, notification, translate
+from lib.api.flix.kodi import ADDON_PATH, ADDON_NAME, set_logger, notification, translate, Progress
 from lib.settings import get_language
 
 MOVIES_TYPE = "movies"
@@ -16,6 +16,10 @@ SHOWS_TYPE = "tvshows"
 EPISODES_TYPE = "episodes"
 
 plugin = Plugin()
+
+
+def progress(obj):
+    return Progress(obj, heading=ADDON_NAME, message=translate(30110))
 
 
 def li(tid, icon):
@@ -37,6 +41,27 @@ def handle_page(data, func, *args, **kwargs):
 
 def container_update(func, *args, **kwargs):
     executebuiltin("Container.Update({})".format(plugin.url_for(func, *args, **kwargs)))
+
+
+def add_person(person_li, person_id):
+    addDirectoryItem(plugin.handle, plugin.url_for(handle_person, person_id), person_li, isFolder=True)
+
+
+def add_movie(movie_id):
+    addDirectoryItem(plugin.handle, plugin.url_for(providers_play_movie, movie_id), tmdb.movie_list_item(movie_id))
+
+
+def add_show(show_id):
+    addDirectoryItem(plugin.handle, plugin.url_for(handle_show, show_id), tmdb.show_list_item(show_id), isFolder=True)
+
+
+def add_season(season_li, show_id, season_number):
+    addDirectoryItem(plugin.handle, plugin.url_for(handle_season, show_id, season_number), season_li, isFolder=True)
+
+
+def add_episode(episode_li, show_id, season_number, episode_number):
+    addDirectoryItem(
+        plugin.handle, plugin.url_for(providers_play_episode, show_id, season_number, episode_number), episode_li)
 
 
 @plugin.route("/")
@@ -107,9 +132,8 @@ def discover_select(media_type):
 def discover_movies(**kwargs):
     setContent(plugin.handle, MOVIES_TYPE)
     data = tmdb.Discover().movie(**kwargs)
-    for movie_li in tmdb.movie_list_items_by_ids(tmdb.get_ids(data)):
-        # TODO - call providers
-        addDirectoryItem(plugin.handle, "", movie_li)
+    for movie_id in progress(tmdb.get_ids(data)):
+        add_movie(movie_id)
     handle_page(data, discover_movies, **kwargs)
     endOfDirectory(plugin.handle)
 
@@ -123,8 +147,8 @@ def discover_movies(**kwargs):
 def discover_shows(**kwargs):
     setContent(plugin.handle, SHOWS_TYPE)
     data = tmdb.Discover().tv(**kwargs)
-    for show_li, show_id in tmdb.show_list_items_by_id(tmdb.get_ids(data)):
-        addDirectoryItem(plugin.handle, plugin.url_for(handle_show, show_id), show_li, isFolder=True)
+    for show_id in progress(tmdb.get_ids(data)):
+        add_show(show_id)
     handle_page(data, discover_shows, **kwargs)
     endOfDirectory(plugin.handle)
 
@@ -133,9 +157,8 @@ def discover_shows(**kwargs):
 @plugin.route("/discover/people/<page>")
 def discover_people(**kwargs):
     data = tmdb.People().popular(**kwargs)
-    for person_li in tmdb.person_list_items(data):
-        # TODO - show movies
-        addDirectoryItem(plugin.handle, "", person_li, isFolder=True)
+    for person_li, person_id in tmdb.person_list_items(data):
+        add_person(person_li, person_id)
     handle_page(data, discover_people, **kwargs)
     endOfDirectory(plugin.handle)
 
@@ -155,11 +178,18 @@ def search():
     pass
 
 
+@plugin.route("/handle_person/<person_id>")
+def handle_person(person_id):
+    for tmdb_id, is_movie, _ in progress(tmdb.get_person_credits(person_id)):
+        add_movie(tmdb_id) if is_movie else add_show(tmdb_id)
+    endOfDirectory(plugin.handle)
+
+
 @plugin.route("/handle_show/<show_id>")
 def handle_show(show_id):
     setContent(plugin.handle, SHOWS_TYPE)
     for season_li, season_number in tmdb.season_list_items(show_id):
-        addDirectoryItem(plugin.handle, plugin.url_for(handle_season, show_id, season_number), season_li, isFolder=True)
+        add_season(season_li, show_id, season_number)
     endOfDirectory(plugin.handle)
 
 
@@ -167,9 +197,18 @@ def handle_show(show_id):
 def handle_season(show_id, season_number):
     setContent(plugin.handle, EPISODES_TYPE)
     for episode_li, episode_number in tmdb.episodes_list_items(show_id, season_number):
-        # TODO - call providers
-        addDirectoryItem(plugin.handle, "", episode_li)
+        add_episode(episode_li, show_id, season_number, episode_number)
     endOfDirectory(plugin.handle)
+
+
+@plugin.route("/providers/play_movie/<movie_id>")
+def providers_play_movie(movie_id):
+    pass
+
+
+@plugin.route("/providers/play_episode/<show_id>/<season_number>/<episode_number>")
+def providers_play_episode(show_id, season_number, episode_number):
+    pass
 
 
 @plugin.route("/play_trailer/<media_type>/<tmdb_id>")

@@ -1,3 +1,6 @@
+import time
+from datetime import datetime
+
 import tmdbsimple
 import xbmcgui
 
@@ -153,6 +156,18 @@ def get_genres_by_name(genres_data):
     return {g["name"]: g["id"] for g in genres_data["genres"]}
 
 
+def get_movie_data(movie_id):
+    return Movies(movie_id).info(language=get_language(), append_to_response="credits,alternative_titles")
+
+
+def get_show_data(show_id):
+    return TV(show_id).info(language=get_language(), append_to_response="credits,alternative_titles")
+
+
+def get_season_data(show_id, season_number):
+    return TVSeasons(show_id, season_number).info(language=get_language(), append_to_response="credits")
+
+
 def get_movie_info(data):
     if prefer_original_titles():
         title = data["original_title"]
@@ -182,7 +197,6 @@ def get_movie_info(data):
         "plot": data.get("overview"),
         "trailer": "plugin://{}/play_trailer/movie/{}".format(ADDON_ID, data["id"]),
         "mediatype": "movie",
-        # with info() - append_to_response="credits"
         "genre": [g["name"] for g in data.get("genres", [])],
         "imdbnumber": data.get("imdb_id"),
         "code": data.get("imdb_id"),
@@ -202,23 +216,12 @@ def get_movie_info(data):
     return title, info, art
 
 
-def movie_to_list_item(movie_data):
-    title, info, art = get_movie_info(movie_data)
+def movie_list_item(movie_id):
+    title, info, art = get_movie_info(get_movie_data(movie_id))
     list_item = xbmcgui.ListItem(title)
     list_item.setInfo("video", info)
     list_item.setArt(art)
     return list_item
-
-
-def movie_list_items(data):
-    for result in data["results"]:
-        yield movie_to_list_item(result)
-
-
-def movie_list_items_by_ids(movie_ids):
-    for movie_id in movie_ids:
-        result = Movies(movie_id).info(language=get_language(), append_to_response="credits")
-        yield movie_to_list_item(result)
 
 
 def get_show_info(data):
@@ -250,7 +253,6 @@ def get_show_info(data):
         "status": data.get("status"),
         "trailer": "plugin://{}/play_trailer/show/{}".format(ADDON_ID, data["id"]),
         "mediatype": "tvshow",
-        # with info() - append_to_response="credits"
         "genre": [g["name"] for g in data.get("genres", [])],
         "imdbnumber": data.get("imdb_id"),
         "code": data.get("imdb_id"),
@@ -269,50 +271,45 @@ def get_show_info(data):
     return title, info, art
 
 
-def show_to_list_item(show_data):
-    title, info, art = get_show_info(show_data)
+def show_list_item(show_id):
+    title, info, art = get_show_info(get_show_data(show_id))
     list_item = xbmcgui.ListItem(title)
     list_item.setInfo("video", info)
     list_item.setArt(art)
     return list_item
 
 
-def show_list_items(data):
-    for result in data["results"]:
-        yield show_to_list_item(result), result["id"]
-
-
-def show_list_items_by_id(shows_ids):
-    for show_id in shows_ids:
-        result = TV(show_id).info(language=get_language(), append_to_response="credits")
-        yield show_to_list_item(result), result["id"]
-
-
 def season_list_items(show_id):
-    data = TV(show_id).info(language=get_language(), append_to_response="credits")
+    data = get_show_data(show_id)
     title, info, art = get_show_info(data)
     info.update({
         "mediatype": "season",
         "status": "",
+        "originaltitle": None,
     })
 
     for season in data["seasons"]:
         season_art = dict(art)
         season_info = dict(info)
 
+        season_title = season["name"]
         premiered = season.get("air_date", "")
-        season_info["trailer"] = "plugin://{}/play_trailer/season/{}/{}".format(
-            ADDON_ID, data["id"], season["season_number"])
-        season_info["tvshowtitle"] = title
-        season_info["premiered"] = premiered
-        season_info["year"] = premiered.split("-")[0] if premiered else ""
-        season_info["season"] = 1
-        season_info["episode"] = season.get("episode_count")
+        season_info.update({
+            "title": season_title,
+            "trailer": "plugin://{}/play_trailer/season/{}/{}".format(
+                ADDON_ID, data["id"], season["season_number"]),
+            "tvshowtitle": title,
+            "premiered": premiered,
+            "year": premiered.split("-")[0] if premiered else "",
+            "season": 1,
+            "episode": season.get("episode_count"),
+        })
+
         overview = season.get("overview")
         if overview:
             season_info["plot"] = overview
 
-        season_li = xbmcgui.ListItem(title + " - " + season["name"])
+        season_li = xbmcgui.ListItem(season_title)
         season_li.setInfo("video", season_info)
 
         icon = get_image(season, "poster_path")
@@ -323,41 +320,43 @@ def season_list_items(show_id):
         yield season_li, season["season_number"]
 
 
-def get_episode_info(data):
-    title = data["name"]
+def get_episodes_info(show_id, season_number):
+    season_data = get_season_data(show_id, season_number)
+    season_credits = season_data.get("credits", {})
 
-    crew = data.get("crew", [])
-    info = {
-        "title": title,
-        "aired": data.get("air_date"),
-        "season": data.get("season_number"),
-        "episode": data.get("episode_number"),
-        "code": data.get("production_code"),
-        "plot": data.get("overview"),
-        "rating": data.get("vote_average"),
-        "votes": data.get("vote_count"),
-        "trailer": "plugin://{}/play_trailer/episode/{}/{}/{}".format(
-            ADDON_ID, data["show_id"], data["season_number"], data["episode_number"]),
-        "mediatype": "episode",
-        "castandrole": [(c["name"], c["character"]) for c in data.get("guest_stars", [])],
-        "director": [c["name"] for c in crew if c["job"] == "Director"],
-        "writer": [c["name"] for c in crew if c["job"] == "Writer"],
-    }
+    for episode in season_data["episodes"]:
+        title = episode["name"]
+        episode_number = episode["episode_number"]
+        crew = episode.get("crew", [])
+        info = {
+            "title": title,
+            "aired": episode.get("air_date"),
+            "season": episode.get("season_number"),
+            "episode": episode.get("episode_number"),
+            "code": episode.get("production_code"),
+            "plot": episode.get("overview"),
+            "rating": episode.get("vote_average"),
+            "votes": episode.get("vote_count"),
+            "trailer": "plugin://{}/play_trailer/episode/{}/{}/{}".format(
+                ADDON_ID, show_id, season_number, episode_number),
+            "mediatype": "episode",
+            "castandrole": [(c["name"], c["character"]) for c in
+                            season_credits.get("cast", []) + episode.get("guest_stars", [])],
+            "director": [c["name"] for c in crew if c["job"] == "Director"],
+            "writer": [c["name"] for c in crew if c["job"] == "Writer"],
+        }
 
-    still_path = get_image(data, "still_path")
-    art = {"icon": "DefaultVideo.png", "thumb": still_path, "poster": still_path, "fanart": still_path}
-
-    return title, info, art
+        still_path = get_image(episode, "still_path")
+        art = {"icon": "DefaultVideo.png", "thumb": still_path, "poster": still_path, "fanart": still_path}
+        yield title, info, art, episode_number
 
 
 def episodes_list_items(show_id, season_number):
-    season = TVSeasons(show_id, season_number).info(language=get_language())
-    for episode in season["episodes"]:
-        title, info, art = get_episode_info(episode)
+    for title, info, art, episode_number in get_episodes_info(show_id, season_number):
         episode_li = xbmcgui.ListItem(title)
         episode_li.setInfo("video", info)
         episode_li.setArt(art)
-        yield episode_li, episode["episode_number"]
+        yield episode_li, episode_number
 
 
 def person_list_items(data):
@@ -365,4 +364,27 @@ def person_list_items(data):
         list_item = xbmcgui.ListItem(result["name"])
         icon = get_image(result, "profile_path")
         list_item.setArt({"icon": "DefaultActor.png", "thumb": icon, "poster": icon})
-        yield list_item
+        yield list_item, result["id"]
+
+
+def _get_credits(data_credits):
+    now = datetime.now()
+    for credit in data_credits:
+        release_date = credit.get("release_date")
+        if not release_date or datetime(*time.strptime(release_date, "%Y-%m-%d")[:6]) > now:
+            continue
+        if credit.get("media_type") == "movie":
+            yield credit["id"], True, release_date
+        elif credit.get("media_type") == "movie":
+            yield credit["id"], False, release_date
+
+
+def get_person_credits(person_id, cast=True, crew=False):
+    data = People(person_id).combined_credits(language=get_language())
+    credits_list = []
+    if cast:
+        credits_list += list(_get_credits(data.get("cast", [])))
+    if crew:
+        credits_list += list(_get_credits(data.get("crew", [])))
+    credits_list.sort(key=lambda v: v[2], reverse=True)
+    return credits_list

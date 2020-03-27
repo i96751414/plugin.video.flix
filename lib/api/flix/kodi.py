@@ -62,6 +62,49 @@ def get_installed_addons(addon_type="", content="unknown", enabled="all"):
     return [(a["addonid"], a["type"]) for a in data["result"]["addons"]]
 
 
+def busy_dialog():
+    xbmc.executebuiltin("ActivateWindow(busydialog)")
+
+
+def close_busy_dialog():
+    xbmc.executebuiltin("Dialog.Close(busydialog)")
+
+
+class Busy(object):
+    def __enter__(self):
+        busy_dialog()
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        close_busy_dialog()
+
+
+class Progress(object):
+    def __init__(self, iterable, impl=xbmcgui.DialogProgressBG, **kwargs):
+        self._iterable = iterable
+        self._length = len(iterable)
+        self._impl = impl
+        self._kwargs = kwargs
+        self._dialog = None
+
+    def __iter__(self):
+        if self._dialog is not None:
+            raise ValueError("dialog already created")
+        self._dialog = self._impl()
+        self._dialog.create(**self._kwargs)
+        for i, obj in enumerate(self._iterable):
+            self._dialog.update(int(100 * (i + 1) / self._length))
+            yield obj
+        self.close()
+
+    def __del__(self):
+        self.close()
+
+    def close(self):
+        if self._dialog is not None:
+            self._dialog.close()
+            self._dialog = None
+
+
 class KodiLogHandler(logging.StreamHandler):
     levels = {
         logging.CRITICAL: xbmc.LOGFATAL,

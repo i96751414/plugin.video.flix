@@ -86,3 +86,7 @@ msgstr ""
 msgctxt "#30109"
 msgid "Providers can't be called"
 msgstr ""
+
+msgctxt "#30110"
+msgid "Please wait..."
+msgstr ""
