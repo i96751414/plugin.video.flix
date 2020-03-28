@@ -51,6 +51,7 @@ def execute_json_rpc(method, rpc_version="2.0", rpc_id=1, **params):
 
 
 def notify_all(sender, message, data=None):
+    # We could use NotifyAll(sender, data [, json]) builtin as well.
     params = {"sender": sender, "message": message}
     if data is not None:
         params["data"] = data

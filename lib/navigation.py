@@ -48,20 +48,37 @@ def add_person(person_li, person_id):
 
 
 def add_movie(movie_id):
-    addDirectoryItem(plugin.handle, plugin.url_for(providers_play_movie, movie_id), tmdb.movie_list_item(movie_id))
+    addDirectoryItem(
+        plugin.handle,
+        plugin.url_for(providers_play_movie, movie_id),
+        tmdb.Movie(movie_id).to_list_item(),
+    )
 
 
 def add_show(show_id):
-    addDirectoryItem(plugin.handle, plugin.url_for(handle_show, show_id), tmdb.show_list_item(show_id), isFolder=True)
-
-
-def add_season(season_li, show_id, season_number):
-    addDirectoryItem(plugin.handle, plugin.url_for(handle_season, show_id, season_number), season_li, isFolder=True)
-
-
-def add_episode(episode_li, show_id, season_number, episode_number):
     addDirectoryItem(
-        plugin.handle, plugin.url_for(providers_play_episode, show_id, season_number, episode_number), episode_li)
+        plugin.handle,
+        plugin.url_for(handle_show, show_id),
+        tmdb.Show(show_id).to_list_item(),
+        isFolder=True,
+    )
+
+
+def add_season(season):
+    addDirectoryItem(
+        plugin.handle,
+        plugin.url_for(handle_season, season.show_id, season.season_number),
+        season.to_list_item(),
+        isFolder=True,
+    )
+
+
+def add_episode(episode):
+    addDirectoryItem(
+        plugin.handle,
+        plugin.url_for(providers_play_episode, episode.show_id, episode.season_number, episode.episode_number),
+        episode.to_list_item(),
+    )
 
 
 @plugin.route("/")
@@ -188,16 +205,16 @@ def handle_person(person_id):
 @plugin.route("/handle_show/<show_id>")
 def handle_show(show_id):
     setContent(plugin.handle, SHOWS_TYPE)
-    for season_li, season_number in tmdb.season_list_items(show_id):
-        add_season(season_li, show_id, season_number)
+    for season in tmdb.Show(show_id).seasons():
+        add_season(season)
     endOfDirectory(plugin.handle)
 
 
 @plugin.route("/handle_season/<show_id>/<season_number>")
 def handle_season(show_id, season_number):
     setContent(plugin.handle, EPISODES_TYPE)
-    for episode_li, episode_number in tmdb.episodes_list_items(show_id, season_number):
-        add_episode(episode_li, show_id, season_number, episode_number)
+    for episode in tmdb.Season(show_id, season_number).episodes():
+        add_episode(episode)
     endOfDirectory(plugin.handle)
 
 

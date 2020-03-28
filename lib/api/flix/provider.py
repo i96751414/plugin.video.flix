@@ -46,7 +46,7 @@ def _setter_and_getter(attribute):
 
 
 class ProviderResult(dict):
-    set_label1, label1 = _setter_and_getter("label1")
+    set_label, label = _setter_and_getter("label")
     set_label2, label2 = _setter_and_getter("label2")
     set_icon, icon = _setter_and_getter("icon")
     set_url, url = _setter_and_getter("url")
@@ -171,6 +171,10 @@ class ProviderListener(xbmc.Monitor):
                     logging.error("Unable to get data from sender '%s': %s", sender, e)
                 else:
                     self._waiting[sender] = False
+                    self.on_receive(sender)
+
+    def on_receive(self, sender):
+        pass
 
     def is_complete(self):
         with self._lock:
