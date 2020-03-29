@@ -162,12 +162,13 @@ class VideoItem(object):
         self._info = kwargs.get("info", {})
         self._art = kwargs.get("art", {})
 
-    def to_list_item(self, path=None):
+    def to_list_item(self, path=None, playable=False):
         list_item = xbmcgui.ListItem(self._title)
         list_item.setInfo("video", self._info)
         list_item.setArt(self._art)
-        if path is not None:
+        if playable:
             list_item.setProperty("IsPlayable", "true")
+        if path is not None:
             list_item.setPath(path)
         return list_item
 

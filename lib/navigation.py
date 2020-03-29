@@ -52,7 +52,11 @@ def add_person(person_li, person_id):
 
 
 def add_movie(movie_id):
-    addDirectoryItem(plugin.handle, plugin.url_for(play_movie, movie_id), tmdb.Movie(movie_id).to_list_item())
+    addDirectoryItem(
+        plugin.handle,
+        plugin.url_for(play_movie, movie_id),
+        tmdb.Movie(movie_id).to_list_item(playable=True),
+    )
 
 
 def add_show(show_id):
@@ -77,7 +81,7 @@ def add_episode(episode):
     addDirectoryItem(
         plugin.handle,
         plugin.url_for(play_episode, episode.show_id, episode.season_number, episode.episode_number),
-        episode.to_list_item(),
+        episode.to_list_item(playable=True),
     )
 
 
