@@ -73,17 +73,18 @@ def play(item, method, *args, **kwargs):
         dialog.doModal()
         if dialog.selected >= 0:
             provider, provider_result = results[dialog.selected]
+            handle = int(sys.argv[1])
             if provider_result.url:
                 logging.debug("Going to play url '%s' from provider %s", provider_result.url, provider)
-                setResolvedUrl(int(sys.argv[1]), True, item.to_list_item(path=provider_result.url))
+                setResolvedUrl(handle, True, item.to_list_item(path=provider_result.url))
             else:
                 logging.debug("Need to call 'resolve' from provider %s", provider)
-                url = run_provider_method(provider, "resolve", provider_result.provider_data)
+                url = run_provider_method(provider, "resolve", handle, item.dict(), provider_result.provider_data)
                 if url is None:
                     logging.debug("No url from 'resolve' method. Assuming the provider will invoke the player")
                 else:
                     logging.debug("Going to play resolved url '%s' from provider %s", url, provider)
-                    setResolvedUrl(int(sys.argv[1]), True, item.to_list_item(path=url))
+                    setResolvedUrl(handle, True, item.to_list_item(path=url))
     else:
         notification(translate(30112))
 
