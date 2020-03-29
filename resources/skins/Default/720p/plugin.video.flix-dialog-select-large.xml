@@ -76,7 +76,7 @@
                     <control type="label">
                         <left>70</left>
                         <top>2</top>
-                        <width>745</width>
+                        <width>740</width>
                         <height>30</height>
                         <font>font13</font>
                         <align>left</align>
@@ -89,7 +89,7 @@
                     <control type="label">
                         <left>70</left>
                         <top>28</top>
-                        <width>745</width>
+                        <width>740</width>
                         <height>30</height>
                         <font>font12</font>
                         <align>left</align>
@@ -118,7 +118,7 @@
                     <control type="label">
                         <left>70</left>
                         <top>2</top>
-                        <width>745</width>
+                        <width>740</width>
                         <height>30</height>
                         <font>font13</font>
                         <align>left</align>
@@ -131,7 +131,7 @@
                     <control type="label">
                         <left>70</left>
                         <top>28</top>
-                        <width>745</width>
+                        <width>740</width>
                         <height>30</height>
                         <font>font12</font>
                         <align>left</align>
