@@ -6,7 +6,7 @@ from xbmcplugin import setResolvedUrl
 
 from lib.api.flix.kodi import ADDON_NAME, Busy, translate, notification
 # noinspection PyProtectedMember
-from lib.api.flix.provider import get_providers, send_to_providers, send_to_provider, ProviderListener, ProviderResult
+from lib.api.flix.provider import get_providers, send_to_providers, ProviderListener, ProviderResult
 from lib.dialog_select import dialog_select
 from lib.settings import get_providers_timeout
 from lib.tmdb import VideoItem, Movie, Show, Season
@@ -39,6 +39,12 @@ def run_providers_method(method, *args, **kwargs):
     return listener.data
 
 
+def run_provider_method(provider, method, *args, **kwargs):
+    with ProviderListener((provider,), method, timeout=get_providers_timeout()) as listener:
+        send_to_providers((provider,), method, *args, **kwargs)
+    return listener.data.get(provider)
+
+
 def get_providers_results(method, *args, **kwargs):
     results = []
     data = run_providers_method(method, *args, **kwargs)
@@ -68,9 +74,16 @@ def play(item, method, *args, **kwargs):
         if dialog.selected >= 0:
             provider, provider_result = results[dialog.selected]
             if provider_result.url:
+                logging.debug("Going to play url '%s' from provider %s", provider_result.url, provider)
                 setResolvedUrl(int(sys.argv[1]), True, item.to_list_item(path=provider_result.url))
             else:
-                send_to_provider(provider, "resolve", provider_result.provider_data, item.dict())
+                logging.debug("Need to call 'resolve' from provider %s", provider)
+                url = run_provider_method(provider, "resolve", provider_result.provider_data)
+                if url is None:
+                    logging.debug("No url from 'resolve' method. Assuming the provider will invoke the player")
+                else:
+                    logging.debug("Going to play resolved url '%s' from provider %s", url, provider)
+                    setResolvedUrl(int(sys.argv[1]), True, item.to_list_item(path=url))
     else:
         notification(translate(30112))
 

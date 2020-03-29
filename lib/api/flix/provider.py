@@ -83,7 +83,7 @@ class Provider(object):
         :param title: The movie title.
         :type title: str
         :param year: The movie release year. This is optional, as some movies don't have a release date attribute.
-        :type year: [opt] int
+        :type year: int or None
         :param titles: Dictionary containing key-pairs of country and title, respectively.
         :type titles: dict[str, str]
         :return: List of search results.
@@ -110,19 +110,16 @@ class Provider(object):
         """
         raise NotImplementedError("'search_episode' method must be implemented")
 
-    def resolve(self, provider_data, item):
+    def resolve(self, provider_data):
         """
         Resolve method is only called in cases where the provider has not set the `url` parameter of
         :class:`ProviderResult` but did set the `provider_data` parameter (which will be used here).
         This may be useful in cases where the `url` can't be obtained right away.
 
-        It is also expected a call to :func:`xbmcplugin.setResolvedUrl` from this method, otherwise
-        the player will not start.
-
         :param provider_data: `provided_data` from result (:class:`ProviderResult`) .
         :type provider_data: any
-        :param item: Dictionary containing :class:`xbmcgui.ListItem` information ('title', 'info' and 'art').
-        :type item: dict
+        :return: The url to be played. If None, it is assumed the script will invoke the player by itself.
+        :rtype: str or None
         """
         raise NotImplementedError("'resolve' method must be implemented")
 
