@@ -82,8 +82,8 @@ class Provider(object):
         :type tmdb_id: str
         :param title: The movie title.
         :type title: str
-        :param year: The movie release year.
-        :type year: int
+        :param year: The movie release year. This is optional, as some movies don't have a release date attribute.
+        :type year: [opt] int
         :param titles: Dictionary containing key-pairs of country and title, respectively.
         :type titles: dict[str, str]
         :return: List of search results.
@@ -110,7 +110,7 @@ class Provider(object):
         """
         raise NotImplementedError("'search_episode' method must be implemented")
 
-    def resolve(self, provider_data):
+    def resolve(self, provider_data, item):
         """
         Resolve method is only called in cases where the provider has not set the `url` parameter of
         :class:`ProviderResult` but did set the `provider_data` parameter (which will be used here).
@@ -121,6 +121,8 @@ class Provider(object):
 
         :param provider_data: `provided_data` from result (:class:`ProviderResult`) .
         :type provider_data: any
+        :param item: Dictionary containing :class:`xbmcgui.ListItem` information ('title', 'info' and 'art').
+        :type item: dict
         """
         raise NotImplementedError("'resolve' method must be implemented")
 

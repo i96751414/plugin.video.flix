@@ -9,6 +9,7 @@ from xbmcplugin import addDirectoryItem, endOfDirectory, setContent
 
 from lib import tmdb
 from lib.api.flix.kodi import ADDON_PATH, ADDON_NAME, set_logger, notification, translate, Progress
+from lib.providers import play_search, play_movie, play_episode
 from lib.settings import get_language
 
 MOVIES_TYPE = "movies"
@@ -16,6 +17,9 @@ SHOWS_TYPE = "tvshows"
 EPISODES_TYPE = "episodes"
 
 plugin = Plugin()
+plugin.add_route(play_search, "/providers/play_search/<query>")
+plugin.add_route(play_movie, "/providers/play_movie/<movie_id>")
+plugin.add_route(play_episode, "/providers/play_episode/<show_id>/<season_number>/<episode_number>")
 
 
 def progress(obj):
@@ -48,11 +52,7 @@ def add_person(person_li, person_id):
 
 
 def add_movie(movie_id):
-    addDirectoryItem(
-        plugin.handle,
-        plugin.url_for(providers_play_movie, movie_id),
-        tmdb.Movie(movie_id).to_list_item(),
-    )
+    addDirectoryItem(plugin.handle, plugin.url_for(play_movie, movie_id), tmdb.Movie(movie_id).to_list_item())
 
 
 def add_show(show_id):
@@ -76,7 +76,7 @@ def add_season(season):
 def add_episode(episode):
     addDirectoryItem(
         plugin.handle,
-        plugin.url_for(providers_play_episode, episode.show_id, episode.season_number, episode.episode_number),
+        plugin.url_for(play_episode, episode.show_id, episode.season_number, episode.episode_number),
         episode.to_list_item(),
     )
 
@@ -216,16 +216,6 @@ def handle_season(show_id, season_number):
     for episode in tmdb.Season(show_id, season_number).episodes():
         add_episode(episode)
     endOfDirectory(plugin.handle)
-
-
-@plugin.route("/providers/play_movie/<movie_id>")
-def providers_play_movie(movie_id):
-    pass
-
-
-@plugin.route("/providers/play_episode/<show_id>/<season_number>/<episode_number>")
-def providers_play_episode(show_id, season_number, episode_number):
-    pass
 
 
 @plugin.route("/play_trailer/<media_type>/<tmdb_id>")

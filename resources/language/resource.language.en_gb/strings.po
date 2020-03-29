@@ -90,3 +90,15 @@ msgstr ""
 msgctxt "#30110"
 msgid "Please wait..."
 msgstr ""
+
+msgctxt "#30111"
+msgid "Getting results from providers..."
+msgstr ""
+
+msgctxt "#30112"
+msgid "No results found!"
+msgstr ""
+
+msgctxt "#30113"
+msgid "Results found:"
+msgstr ""
