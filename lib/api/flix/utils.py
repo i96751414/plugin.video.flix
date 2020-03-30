@@ -1,3 +1,32 @@
+"""
+Module `utils` provides some compatibility utilities for both Python 2 and 3.
+
+.. data:: PY3
+
+    Indicates if running on Python 3+ (:class:`bool`).
+
+.. data:: string_types
+
+    Available string types for current Python version (:class:`type`).
+
+.. function:: str_to_bytes(s)
+
+    Convert string to bytes. This is a noop for Python 2.
+
+.. function:: bytes_to_str(s)
+
+    Convert bytes to string. This is a noop for Python 2.
+
+.. function:: str_to_unicode(s)
+
+    Convert string to unicode. This is a noop for Python 3.
+
+.. function:: unicode_to_str(s)
+
+    Convert unicode to string. This is a noop for Python 3.
+
+"""
+
 import sys
 
 PY3 = sys.version_info.major >= 3

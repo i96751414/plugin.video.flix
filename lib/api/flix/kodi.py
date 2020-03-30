@@ -1,3 +1,62 @@
+# noinspection PyUnresolvedReferences
+"""
+Module `kodi` provides Kodi utilities.
+
+.. data:: ADDON
+
+    The addon instance (:class:`xbmcaddon.Addon`).
+
+.. data:: ADDON_NAME
+
+    The addon name (:class:`str`).
+
+.. data:: ADDON_ID
+
+    The addon id (:class:`str`).
+
+.. data:: ADDON_PATH
+
+    The addon path (:class:`str`).
+
+.. data:: ADDON_ICON
+
+    The addon icon (:class:`str`).
+
+.. data:: ADDON_DATA
+
+    The addon data path (:class:`str`).
+
+.. function:: set_setting(id, value)
+
+    Set a setting.
+
+    :param id: id of the setting that the module needs to set.
+    :type id: str
+    :param value: value of the setting.
+    :type value: str
+
+.. function:: get_setting(id)
+
+    Get a setting.
+
+    :param id: id of the setting that the module needs to access.
+    :type id: str
+
+.. function:: open_settings
+
+    Open settings window.
+
+.. function:: translate(id)
+
+    Get a localized string.
+
+    :param id: id of string to localize.
+    :type id: int
+    :return: Localized string.
+    :rtype: str
+
+"""
+
 import json
 import logging
 

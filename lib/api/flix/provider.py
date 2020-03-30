@@ -1,3 +1,7 @@
+"""
+Module `provider` provides the core logic behind providers.
+"""
+
 import base64
 import json
 import logging
@@ -42,10 +46,42 @@ def _setter_and_getter(attribute):
     def getter(self):
         return self.get(attribute)
 
+    setter.__doc__ = "Set {}".format(attribute)
+    getter.__doc__ = "Get {}".format(attribute)
     return setter, property(getter)
 
 
 class ProviderResult(dict):
+    # noinspection PyUnresolvedReferences
+    """
+    The ProviderResult is the only type allowed to be returned by :func:`Provider.search`,
+    :func:`Provider.search_movie` and :func:`Provider.search_episode` methods.
+
+    :keyword label: The result label.
+    :type label: str, optional
+    :keyword label2: The result label2.
+    :type label2: str, optional
+    :keyword icon: The result icon. If not set, the fallback icon will be used.
+    :type icon: str, optional
+    :keyword url: The result url. If not set, then `provider_data` must be set, otherwise the result is discarded.
+    :type url: str, optional
+    :keyword provider_data: Data to be sent to provider when :func:`Provider.resolve` is called.
+    :type provider_data: any, optional
+
+    Example::
+
+        # Start by creating the result with some values
+        result = ProviderResult(
+            label="label",
+            label2="label2",
+            icon="foo/icon.png",
+            url="http://foo.bar/video.mp4",
+        )
+
+        # We can then modify values
+        result.set_label2("new label2")
+    """
+
     set_label, label = _setter_and_getter("label")
     set_label2, label2 = _setter_and_getter("label2")
     set_icon, icon = _setter_and_getter("icon")
@@ -54,6 +90,30 @@ class ProviderResult(dict):
 
 
 class Provider(object):
+    """
+    This is where all the logic behind a provider must be implemented. It has methods which
+    are required to be implemented by it's subclass (:func:`search`, :func:`search_movie` and
+    :func:`search_episode`) and also optional methods (:func:`resolve`). The provider can then
+    be registered by using :func:`register`.
+
+    Example::
+
+        class CustomProvider(Provider):
+            def search(self, query):
+                return []
+
+            def search_movie(self, tmdb_id, title, year, titles):
+                query = title
+                if year:
+                    query += " " + str(year)
+                return self.search(query)
+
+            def search_episode(self, tmdb_id, show_title, season_number, episode_number, titles):
+                return self.search("{:s} S{:02d}E{:02d}".format(show_title, season_number, episode_number))
+
+        CustomProvider().register()
+    """
+
     def __init__(self):
         self.logger = set_logger("provider", level=logging.INFO)
         self._methods = {}
@@ -112,8 +172,8 @@ class Provider(object):
 
     def resolve(self, handle, item, provider_data):
         """
-        Resolve method is only called in cases where the provider has not set the `url` parameter of
-        :class:`ProviderResult` but did set the `provider_data` parameter (which will be used here).
+        Resolve method is only called in cases where the provider has not set (:attr:`ProviderResult.url`)
+        but did set the (:attr:`ProviderResult.provider_data`) parameter (which will be used here).
         This may be useful in cases where the `url` can't be obtained right away.
 
         In cases where no url is returned, it is expected a call to :func:`xbmcplugin.setResolvedUrl`
@@ -134,12 +194,16 @@ class Provider(object):
     def ping():
         """
         Ping method for checking the communication with a provider.
+
         :return: The provider id.
         :rtype: str
         """
         return ADDON_ID
 
     def register(self):
+        """
+        Register the provider for execution.
+        """
         self.logger.debug("Running with args: %s", sys.argv)
         if len(sys.argv) != 4:
             self.logger.error("Expecting 4 arguments. Got %s", sys.argv)
