@@ -2,6 +2,7 @@ import datetime
 import logging
 import os
 
+# noinspection PyPackageRequirements
 from routing import Plugin
 from xbmc import executebuiltin
 from xbmcgui import ListItem, Dialog
