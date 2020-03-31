@@ -97,7 +97,7 @@ def play_movie(movie_id):
     item = Movie(movie_id)
     year = item.get_info("year")
     year = int(year) if year else None
-    play(item, "search_movie", movie_id, item.get_info("originaltitle"), year, item.alternative_titles)
+    play(item, "search_movie", movie_id, item.get_info("originaltitle"), item.alternative_titles, year=year)
 
 
 def play_episode(show_id, season_number, episode_number):

@@ -310,8 +310,8 @@ class Show(ShowItem):
         crew = show_credits.get("crew", [])
         info = {
             "title": title,
-            "originaltitle": self._data.get("original_title"),
-            "tvshowtitle": self._data.get("original_title"),
+            "originaltitle": self._data.get("original_name"),
+            "tvshowtitle": self._data.get("original_name"),
             # "genre": [genres_dict[i] for i in self._data.get("genre_ids", []) if i in genres_dict],
             "date": premiered,
             "premiered": premiered,

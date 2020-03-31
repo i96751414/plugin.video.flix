@@ -102,11 +102,8 @@ class Provider(object):
             def search(self, query):
                 return []
 
-            def search_movie(self, tmdb_id, title, year, titles):
-                query = title
-                if year:
-                    query += " " + str(year)
-                return self.search(query)
+            def search_movie(self, tmdb_id, title, titles, year=None):
+                return self.search("{:s} {:d}".format(title, year) if year else title)
 
             def search_episode(self, tmdb_id, show_title, season_number, episode_number, titles):
                 return self.search("{:s} S{:02d}E{:02d}".format(show_title, season_number, episode_number))
@@ -134,7 +131,7 @@ class Provider(object):
         """
         raise NotImplementedError("'search' method must be implemented")
 
-    def search_movie(self, tmdb_id, title, year, titles):
+    def search_movie(self, tmdb_id, title, titles, year=None):
         """
         Search a movie.
 
@@ -142,10 +139,10 @@ class Provider(object):
         :type tmdb_id: str
         :param title: The movie title.
         :type title: str
-        :param year: The movie release year. This is optional, as some movies don't have a release date attribute.
-        :type year: int or None
         :param titles: Dictionary containing key-pairs of country and title, respectively.
         :type titles: dict[str, str]
+        :param year: The movie release year. This is optional, as some movies don't have a release date attribute.
+        :type year: int, optional
         :return: List of search results.
         :rtype: list[ProviderResult]
         """
