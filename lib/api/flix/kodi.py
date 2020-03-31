@@ -85,31 +85,100 @@ else:
 
 
 def notification(message, heading=ADDON_NAME, icon=ADDON_ICON, time=5000, sound=True):
+    """
+    Show a Notification alert.
+
+    :param message: dialog message.
+    :type message: str
+    :param heading: dialog heading (default ADDON_NAME).
+    :type heading: str
+    :param icon: icon to use. (default ADDON_ICON)
+    :type icon: str
+    :param time: time in milliseconds (default 5000)
+    :type time: int
+    :param sound: play notification sound (default True)
+    :type sound: bool
+    """
     xbmcgui.Dialog().notification(heading, message, icon, time, sound)
 
 
 def get_boolean_setting(setting):
+    """
+    Get setting as boolean.
+
+    :param setting: The setting id.
+    :type setting: str
+    :return: The setting value.
+    :rtype: bool
+    """
     return get_setting(setting) == "true"
 
 
 def get_int_setting(setting):
+    """
+    Get setting as integer.
+
+    :param setting: The setting id.
+    :type setting: str
+    :return: The setting value.
+    :rtype: int
+    """
     return int(get_setting(setting))
 
 
 def get_float_setting(setting):
+    """
+    Get setting as float.
+
+    :param setting: The setting id.
+    :type setting: str
+    :return: The setting value.
+    :rtype: float
+    """
     return float(get_setting(setting))
 
 
 def set_boolean_setting(setting, value):
+    """
+    Set boolean setting.
+
+    :param setting: The setting id.
+    :type setting: str
+    :param value: The setting value:
+    :type value: bool
+    """
     set_setting(setting, "true" if value else "false")
 
 
 def execute_json_rpc(method, rpc_version="2.0", rpc_id=1, **params):
+    """
+    Execute a JSON-RPC call.
+
+    :param method: The JSON-RPC method, as specified in https://kodi.wiki/view/JSON-RPC_API.
+    :type method: str
+    :param rpc_version: The JSON-RPC version (default 2.0).
+    :type rpc_version: str
+    :param rpc_id: The JSON-RPC call id (default 1).
+    :type rpc_id: int
+    :param params: The JSON-RPC call parameters.
+    :return: The call result.
+    """
     return json.loads(xbmc.executeJSONRPC(json.dumps(dict(
         jsonrpc=rpc_version, method=method, params=params, id=rpc_id))))
 
 
 def notify_all(sender, message, data=None):
+    """
+    Notify all other connected clients.
+
+    :param sender: The notification sender.
+    :type sender: str
+    :param message: The notification message.
+    :type message: str
+    :param data: Data to send on the notification (optional).
+    :return: The call outcome.
+    :rtype: bool
+    """
     # We could use NotifyAll(sender, data [, json]) builtin as well.
     params = {"sender": sender, "message": message}
     if data is not None:
@@ -118,19 +187,42 @@ def notify_all(sender, message, data=None):
 
 
 def get_installed_addons(addon_type="", content="unknown", enabled="all"):
+    """
+    Get installed addons.
+
+    :param addon_type: Filter by addon type (optional).
+    :type addon_type: str
+    :param content: Filter by content type (optional).
+    :type content: str
+    :param enabled: Filter by enabled addons only (optional).
+    :type enabled: str or bool
+    :return: List of installed addons.
+    :rtype: list[tuple[str, str]]
+    """
     data = execute_json_rpc("Addons.GetAddons", type=addon_type, content=content, enabled=enabled)
     return [(a["addonid"], a["type"]) for a in data["result"]["addons"]]
 
 
 def busy_dialog():
+    """
+    Activate busy dialog window.
+    """
     xbmc.executebuiltin("ActivateWindow(busydialog)")
 
 
 def close_busy_dialog():
+    """
+    Close busy dialog window.
+    """
     xbmc.executebuiltin("Dialog.Close(busydialog)")
 
 
 class Busy(object):
+    """
+    Context manager for activating the busy dialog window while processing,
+    closing it afterwards.
+    """
+
     def __enter__(self):
         busy_dialog()
 
@@ -139,6 +231,14 @@ class Busy(object):
 
 
 class Progress(object):
+    """
+    Iterable wrapper for showing and automatically update/close a progress dialog.
+
+    :param iterable: The iterable to be wrapped.
+    :param impl: The dialog implementation to use (default :class:`xbmcgui.DialogProgressBG`).
+    :param kwargs: Arguments to pass to `dialog.create()` method.
+    """
+
     def __init__(self, iterable, impl=xbmcgui.DialogProgressBG, **kwargs):
         self._iterable = iterable
         self._length = len(iterable)
@@ -160,6 +260,9 @@ class Progress(object):
         self.close()
 
     def close(self):
+        """
+        Close the progress dialog.
+        """
         if self._dialog is not None:
             self._dialog.close()
             self._dialog = None
@@ -187,6 +290,16 @@ class KodiLogHandler(logging.StreamHandler):
 
 
 def set_logger(name=None, level=logging.INFO):
+    """
+    Set a :mod:`logging` logger using :func:`xbmc.log` in the background.
+
+    :param name: The logger name (optional).
+    :type name: str
+    :param level: Default logging level (default `logging.INFO`).
+    :type level: int
+    :return: The logger.
+    :rtype: logging.Logger
+    """
     logger = logging.getLogger(name)
     logger.addHandler(KodiLogHandler())
     logger.setLevel(level)
