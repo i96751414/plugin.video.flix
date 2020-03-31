@@ -91,7 +91,7 @@ def index():
     addDirectoryItem(plugin.handle, plugin.url_for(discover), li(30100, "discover.png"), isFolder=True)
     addDirectoryItem(plugin.handle, plugin.url_for(movies), li(30101, "movies.png"), isFolder=True)
     addDirectoryItem(plugin.handle, plugin.url_for(shows), li(30102, "series.png"), isFolder=True)
-    addDirectoryItem(plugin.handle, plugin.url_for(search), li(30103, "search.png"), isFolder=True)
+    addDirectoryItem(plugin.handle, plugin.url_for(search), li(30103, "search.png"))
     endOfDirectory(plugin.handle)
 
 
@@ -253,7 +253,47 @@ def get_shows(call, **kwargs):
 
 @plugin.route("/search")
 def search():
-    pass
+    choice = Dialog().select(translate(30124), [translate(30125), translate(30126), translate(30127)])
+    if choice == 0:
+        query = Dialog().input(translate(30124) + ": " + translate(30125))
+        search_type = "movie"
+    elif choice == 1:
+        query = Dialog().input(translate(30124) + ": " + translate(30126))
+        search_type = "show"
+    elif choice == 2:
+        query = Dialog().input(translate(30124) + ": " + translate(30127))
+        search_type = "person"
+    else:
+        return
+    if query:
+        container_update(handle_search, search_type, query)
+
+
+@plugin.route("/search/<search_type>/<query>")
+@plugin.route("/search/<search_type>/<query>/<page>")
+def handle_search(search_type, **kwargs):
+    if search_type == "movie":
+        data = tmdb.Search().movie(**kwargs)
+        for movie_id in progress(tmdb.get_ids(data)):
+            add_movie(movie_id)
+    elif search_type == "show":
+        data = tmdb.Search().tv(**kwargs)
+        for show_id in progress(tmdb.get_ids(data)):
+            add_show(show_id)
+    elif search_type == "person":
+        data = tmdb.Search().person(**kwargs)
+        for person_li, person_id in tmdb.person_list_items(data):
+            add_person(person_li, person_id)
+    else:
+        logging.error("Invalid search type '%s' used", search_type)
+        raise ValueError("Unknown search type")
+
+    handle_page(data, handle_search, search_type=search_type, **kwargs)
+
+    succeeded = tmdb.has_results(data)
+    if not succeeded:
+        notification(translate(30112))
+    endOfDirectory(plugin.handle, succeeded)
 
 
 @plugin.route("/handle_person/<person_id>")

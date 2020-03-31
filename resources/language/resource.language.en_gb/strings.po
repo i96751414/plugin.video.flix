@@ -142,3 +142,19 @@ msgstr ""
 msgctxt "#30123"
 msgid "TV shows on the air"
 msgstr ""
+
+msgctxt "#30124"
+msgid "Search by"
+msgstr ""
+
+msgctxt "#30125"
+msgid "Movie"
+msgstr ""
+
+msgctxt "#30126"
+msgid "TV Show"
+msgstr ""
+
+msgctxt "#30127"
+msgid "Person"
+msgstr ""

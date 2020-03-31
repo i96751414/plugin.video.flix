@@ -158,6 +158,10 @@ class Trending(TMDB):
         return response
 
 
+def has_results(data):
+    return bool(data["results"])
+
+
 def get_ids(data):
     return [r["id"] for r in data["results"]]
 
