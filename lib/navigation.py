@@ -273,10 +273,12 @@ def search():
 @plugin.route("/search/<search_type>/<query>/<page>")
 def handle_search(search_type, **kwargs):
     if search_type == "movie":
+        setContent(plugin.handle, MOVIES_TYPE)
         data = tmdb.Search().movie(**kwargs)
         for movie_id in progress(tmdb.get_ids(data)):
             add_movie(movie_id)
     elif search_type == "show":
+        setContent(plugin.handle, SHOWS_TYPE)
         data = tmdb.Search().tv(**kwargs)
         for show_id in progress(tmdb.get_ids(data)):
             add_show(show_id)
