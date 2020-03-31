@@ -27,6 +27,9 @@ class TMDB(tmdbsimple.base.TMDB):
             self._cache.set(identifier, data)
         return data
 
+    def _format_path(self, key):
+        return self._get_path(key).format(**self.__dict__)
+
 
 def _code_gen():
     with open(tmdbsimple.__file__) as f:
@@ -138,6 +141,22 @@ class Networks(tmdbsimple.Networks, TMDB):
 
 
 # end of auto generated code
+class Trending(TMDB):
+    BASE_PATH = "trending"
+    URLS = {
+        "trending": "/{media_type}/{time_window}",
+    }
+
+    def __init__(self, media_type, time_window):
+        super(Trending, self).__init__()
+        self.media_type = media_type
+        self.time_window = time_window
+
+    def get_trending(self, **kwargs):
+        response = self._GET(self._format_path("trending"), kwargs)
+        self._set_attrs_to_values(response)
+        return response
+
 
 def get_ids(data):
     return [r["id"] for r in data["results"]]

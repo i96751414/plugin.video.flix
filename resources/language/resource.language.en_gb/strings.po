@@ -56,7 +56,7 @@ msgid "Movies"
 msgstr ""
 
 msgctxt "#30102"
-msgid "Series"
+msgid "TV Shows"
 msgstr ""
 
 msgctxt "#30103"
@@ -101,4 +101,44 @@ msgstr ""
 
 msgctxt "#30113"
 msgid "Results found:"
+msgstr ""
+
+msgctxt "#30114"
+msgid "Trending movies"
+msgstr ""
+
+msgctxt "#30115"
+msgid "Popular movies"
+msgstr ""
+
+msgctxt "#30116"
+msgid "Top rated movies"
+msgstr ""
+
+msgctxt "#30117"
+msgid "Now playing movies"
+msgstr ""
+
+msgctxt "#30118"
+msgid "Upcoming movies"
+msgstr ""
+
+msgctxt "#30119"
+msgid "Trending TV shows"
+msgstr ""
+
+msgctxt "#30120"
+msgid "Popular TV shows"
+msgstr ""
+
+msgctxt "#30121"
+msgid "Top rated TV shows"
+msgstr ""
+
+msgctxt "#30122"
+msgid "TV shows airing today"
+msgstr ""
+
+msgctxt "#30123"
+msgid "TV shows on the air"
 msgstr ""

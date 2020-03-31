@@ -187,12 +187,68 @@ def discover_people(**kwargs):
 
 @plugin.route("/movies")
 def movies():
-    pass
+    addDirectoryItem(plugin.handle, plugin.url_for(trending_movies), li(30114, "trending.png"), isFolder=True)
+    addDirectoryItem(plugin.handle, plugin.url_for(get_movies, "popular"), li(30115, "popular.png"), isFolder=True)
+    addDirectoryItem(plugin.handle, plugin.url_for(get_movies, "top_rated"), li(30116, "top_rated.png"), isFolder=True)
+    addDirectoryItem(plugin.handle, plugin.url_for(get_movies, "now_playing"), li(30117, "playing.png"), isFolder=True)
+    addDirectoryItem(plugin.handle, plugin.url_for(get_movies, "upcoming"), li(30118, "upcoming.png"), isFolder=True)
+    endOfDirectory(plugin.handle)
+
+
+@plugin.route("/movies/trending")
+@plugin.route("/movies/trending/<page>")
+def trending_movies(**kwargs):
+    setContent(plugin.handle, MOVIES_TYPE)
+    data = tmdb.Trending("movie", "week").get_trending(**kwargs)
+    for tmdb_id in progress(tmdb.get_ids(data)):
+        add_movie(tmdb_id)
+    handle_page(data, trending_movies, **kwargs)
+    endOfDirectory(plugin.handle)
+
+
+@plugin.route("/movies/get/<call>")
+@plugin.route("/movies/get/<call>/<page>")
+def get_movies(call, **kwargs):
+    setContent(plugin.handle, MOVIES_TYPE)
+    logging.debug("Going to call tmdb.Movies().%s()", call)
+    data = getattr(tmdb.Movies(), call)(**kwargs)
+    for tmdb_id in progress(tmdb.get_ids(data)):
+        add_movie(tmdb_id)
+    handle_page(data, get_movies, call=call, **kwargs)
+    endOfDirectory(plugin.handle)
 
 
 @plugin.route("/shows")
 def shows():
-    pass
+    addDirectoryItem(plugin.handle, plugin.url_for(trending_shows), li(30119, "trending.png"), isFolder=True)
+    addDirectoryItem(plugin.handle, plugin.url_for(get_shows, "popular"), li(30120, "popular.png"), isFolder=True)
+    addDirectoryItem(plugin.handle, plugin.url_for(get_shows, "top_rated"), li(30121, "top_rated.png"), isFolder=True)
+    addDirectoryItem(plugin.handle, plugin.url_for(get_shows, "airing_today"), li(30122, "playing.png"), isFolder=True)
+    addDirectoryItem(plugin.handle, plugin.url_for(get_shows, "on_the_air"), li(30123, "upcoming.png"), isFolder=True)
+    endOfDirectory(plugin.handle)
+
+
+@plugin.route("/shows/trending")
+@plugin.route("/shows/trending/<page>")
+def trending_shows(**kwargs):
+    setContent(plugin.handle, SHOWS_TYPE)
+    data = tmdb.Trending("tv", "week").get_trending(**kwargs)
+    for tmdb_id in progress(tmdb.get_ids(data)):
+        add_show(tmdb_id)
+    handle_page(data, trending_shows, **kwargs)
+    endOfDirectory(plugin.handle)
+
+
+@plugin.route("/shows/get/<call>")
+@plugin.route("/shows/get/<call>/<page>")
+def get_shows(call, **kwargs):
+    setContent(plugin.handle, SHOWS_TYPE)
+    logging.debug("Going to call tmdb.TV().%s()", call)
+    data = getattr(tmdb.TV(), call)(**kwargs)
+    for tmdb_id in progress(tmdb.get_ids(data)):
+        add_show(tmdb_id)
+    handle_page(data, get_shows, call=call, **kwargs)
+    endOfDirectory(plugin.handle)
 
 
 @plugin.route("/search")
