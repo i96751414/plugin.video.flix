@@ -348,8 +348,7 @@ def play_trailer(media_type, tmdb_id, season_number=None, episode_number=None, l
 
     for result in tmdb_obj.videos(language=language)["results"]:
         if result["type"] == "Trailer" and result["site"] == "YouTube":
-            executebuiltin("RunPlugin(plugin://plugin.video.youtube/?action=play_video&videoid={})".format(
-                result["key"]))
+            executebuiltin("RunPlugin(plugin://plugin.video.youtube/play/?video_id={})".format(result["key"]))
             return
 
     if language == fallback_language:
