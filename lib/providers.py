@@ -79,7 +79,7 @@ def play(item, method, *args, **kwargs):
                 setResolvedUrl(handle, True, item.to_list_item(path=provider_result.url))
             else:
                 logging.debug("Need to call 'resolve' from provider %s", provider)
-                url = run_provider_method(provider, "resolve_item", handle, item.dict(), provider_result.provider_data)
+                url = run_provider_method(provider, "resolve", handle, provider_result.provider_data)
                 if url is None:
                     logging.debug("No url from 'resolve' method. Assuming the provider will invoke the player")
                 else:

@@ -167,38 +167,17 @@ class Provider(object):
         """
         raise NotImplementedError("'search_episode' method must be implemented")
 
-    def resolve_item(self, handle, item, provider_data):
-        """
-        This method converts the passed `item` into a :class:`xbmcgui.ListItem` object and then calls
-        :func:`resolve`, similar to a decorator. Therefore, all the logic should be implemented in :func:`resolve`.
-
-        :param handle: The calling plugin handle - to be used in :func:`xbmcplugin.setResolvedUrl`, if needed.
-        :type handle: int
-        :param item: Dictionary containing :class:`xbmcgui.ListItem` information ('title', 'info' and 'art').
-        :type item: dict
-        :param provider_data: `provided_data` from result (:class:`ProviderResult`) .
-        :type provider_data: any
-        :return: See :func:`resolve` for more details.
-        """
-        list_item = xbmcgui.ListItem(item["title"])
-        list_item.setInfo("video", item["info"])
-        list_item.setArt(item["art"])
-        return self.resolve(handle, list_item, provider_data)
-
-    def resolve(self, handle, list_item, provider_data):
+    def resolve(self, handle, provider_data):
         """
         Resolve method is only called in cases where the provider has not set (:attr:`ProviderResult.url`)
         but did set the (:attr:`ProviderResult.provider_data`) parameter (which will be used here).
         This may be useful in cases where the `url` can't be obtained right away.
 
         In cases where no url is returned, it is expected a call to :func:`xbmcplugin.setResolvedUrl`
-        from this method, otherwise the player will not start.
+        from this method (using the provided `handle`), otherwise the player will not start.
 
         :param handle: The calling plugin handle - to be used in :func:`xbmcplugin.setResolvedUrl`, if needed.
         :type handle: int
-        :param list_item: ListItem containing title, info and art data. The path must be manually set using
-            :func:`xbmcgui.ListItem.setPath`.
-        :type list_item: xbmcgui.ListItem
         :param provider_data: `provided_data` from result (:class:`ProviderResult`) .
         :type provider_data: any
         :return: The url to be played. If None, it is assumed the script will invoke the player by itself.
