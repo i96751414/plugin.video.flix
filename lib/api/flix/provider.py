@@ -167,7 +167,25 @@ class Provider(object):
         """
         raise NotImplementedError("'search_episode' method must be implemented")
 
-    def resolve(self, handle, item, provider_data):
+    def resolve_item(self, handle, item, provider_data):
+        """
+        This method converts the passed `item` into a :class:`xbmcgui.ListItem` object and then calls
+        :func:`resolve`, similar to a decorator. Therefore, all the logic should be implemented in :func:`resolve`.
+
+        :param handle: The calling plugin handle - to be used in :func:`xbmcplugin.setResolvedUrl`, if needed.
+        :type handle: int
+        :param item: Dictionary containing :class:`xbmcgui.ListItem` information ('title', 'info' and 'art').
+        :type item: dict
+        :param provider_data: `provided_data` from result (:class:`ProviderResult`) .
+        :type provider_data: any
+        :return: See :func:`resolve` for more details.
+        """
+        list_item = xbmcgui.ListItem(item["title"])
+        list_item.setInfo("video", item["info"])
+        list_item.setArt(item["art"])
+        return self.resolve(handle, list_item, provider_data)
+
+    def resolve(self, handle, list_item, provider_data):
         """
         Resolve method is only called in cases where the provider has not set (:attr:`ProviderResult.url`)
         but did set the (:attr:`ProviderResult.provider_data`) parameter (which will be used here).
@@ -178,8 +196,9 @@ class Provider(object):
 
         :param handle: The calling plugin handle - to be used in :func:`xbmcplugin.setResolvedUrl`, if needed.
         :type handle: int
-        :param item: Dictionary containing :class:`xbmcgui.ListItem` information ('title', 'info' and 'art').
-        :type item: dict
+        :param list_item: ListItem containing title, info and art data. The path must be manually set using
+            :func:`xbmcgui.ListItem.setPath`.
+        :type list_item: xbmcgui.ListItem
         :param provider_data: `provided_data` from result (:class:`ProviderResult`) .
         :type provider_data: any
         :return: The url to be played. If None, it is assumed the script will invoke the player by itself.
@@ -187,14 +206,14 @@ class Provider(object):
         """
         raise NotImplementedError("'resolve' method must be implemented")
 
-    @staticmethod
-    def ping():
+    def ping(self):
         """
         Ping method for checking the communication with a provider.
 
         :return: The provider id.
         :rtype: str
         """
+        self.logger.debug("Ping method called")
         return ADDON_ID
 
     def register(self):
