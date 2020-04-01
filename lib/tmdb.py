@@ -179,16 +179,35 @@ def get_genres_by_name(genres_data):
     return {g["name"]: g["id"] for g in genres_data["genres"]}
 
 
+def get_cast(cast):
+    return [{"name": c["name"], "role": c["character"], "thumbnail": get_image(c, "profile_path"), "order": i}
+            for i, c in enumerate(cast, 1)]
+
+
+def get_cast_and_role(cast):
+    return [(c["name"], c["character"]) for c in cast]
+
+
+def get_directors(crew):
+    return [c["name"] for c in crew if c["job"] == "Director"]
+
+
+def get_writers(crew):
+    return [c["name"] for c in crew if c["job"] == "Writer"]
+
+
 class VideoItem(object):
     def __init__(self, **kwargs):
         self._title = kwargs.get("title", "")
         self._info = kwargs.get("info", {})
         self._art = kwargs.get("art", {})
+        self._cast = kwargs.get("cast", [])
 
     def to_list_item(self, path=None, playable=False):
         list_item = xbmcgui.ListItem(self._title)
         list_item.setInfo("video", self._info)
         list_item.setArt(self._art)
+        list_item.setCast(self._cast)
         if playable:
             list_item.setProperty("IsPlayable", "true")
         if path is not None:
@@ -200,7 +219,7 @@ class VideoItem(object):
         return self._title
 
     def dict(self):
-        return {"title": self._title, "info": self._info, "art": self._art}
+        return {"title": self._title, "info": self._info, "art": self._art, "cast": self._cast}
 
     def get_info(self, key):
         return self._info[key]
@@ -259,9 +278,9 @@ class Movie(MovieItem):
             "code": self._data.get("imdb_id"),
             "tagline": self._data.get("tagline"),
             "status": self._data.get("status"),
-            "castandrole": [(c["name"], c["character"]) for c in cast],
-            "director": [c["name"] for c in crew if c["job"] == "Director"],
-            "writer": [c["name"] for c in crew if c["job"] == "Writer"],
+            "castandrole": get_cast_and_role(cast),
+            "director": get_directors(crew),
+            "writer": get_writers(crew),
             "studio": [s["name"] for s in self._data.get("production_companies", [])],
             "duration": runtime * 60 if runtime else None,
         }
@@ -270,7 +289,7 @@ class Movie(MovieItem):
         backdrop = get_image(self._data, "backdrop_path")
         art = {"icon": "DefaultVideo.png", "thumb": icon, "poster": icon, "fanart": backdrop}
 
-        super(Movie, self).__init__(movie_id, title=title, info=info, art=art)
+        super(Movie, self).__init__(movie_id, title=title, info=info, art=art, cast=get_cast(cast))
 
     @property
     def alternative_titles(self):
@@ -325,9 +344,9 @@ class Show(ShowItem):
             "genre": [g["name"] for g in self._data.get("genres", [])],
             "imdbnumber": self._data.get("imdb_id"),
             "code": self._data.get("imdb_id"),
-            "castandrole": [(c["name"], c["character"]) for c in cast],
-            "director": [c["name"] for c in crew if c["job"] == "Director"],
-            "writer": [c["name"] for c in crew if c["job"] == "Writer"],
+            "castandrole": get_cast_and_role(cast),
+            "director": get_directors(crew),
+            "writer": get_writers(crew),
             "studio": [s["name"] for s in self._data.get("production_companies", [])],
             "season": self._data.get("number_of_seasons"),
             "episode": self._data.get("number_of_episodes"),
@@ -337,7 +356,7 @@ class Show(ShowItem):
         backdrop = get_image(self._data, "backdrop_path")
         art = {"icon": "DefaultVideo.png", "thumb": icon, "poster": icon, "fanart": backdrop}
 
-        super(Show, self).__init__(show_id, title=title, info=info, art=art)
+        super(Show, self).__init__(show_id, title=title, info=info, art=art, cast=get_cast(cast))
 
     @property
     def alternative_titles(self):
@@ -373,7 +392,8 @@ class Show(ShowItem):
             if icon:
                 season_art["thumb"] = season_art["poster"] = icon
 
-            yield SeasonItem(self._show_id, season_number, title=season_title, info=season_info, art=season_art)
+            yield SeasonItem(self._show_id, season_number,
+                             title=season_title, info=season_info, art=season_art, cast=self._cast)
 
 
 class SeasonItem(ShowItem):
@@ -397,6 +417,7 @@ class Season(SeasonItem):
         title = episode["name"]
         episode_number = episode["episode_number"]
         crew = episode.get("crew", [])
+        cast = self._credits.get("cast", []) + episode.get("guest_stars", [])
         info = {
             "title": title,
             "aired": episode.get("air_date"),
@@ -409,15 +430,15 @@ class Season(SeasonItem):
             "trailer": "plugin://{}/play_trailer/episode/{}/{}/{}".format(
                 ADDON_ID, self._show_id, self._season_number, episode_number),
             "mediatype": "episode",
-            "castandrole": [(c["name"], c["character"]) for c in
-                            self._credits.get("cast", []) + episode.get("guest_stars", [])],
-            "director": [c["name"] for c in crew if c["job"] == "Director"],
-            "writer": [c["name"] for c in crew if c["job"] == "Writer"],
+            "castandrole": get_cast_and_role(cast),
+            "director": get_directors(crew),
+            "writer": get_writers(crew),
         }
 
         still_path = get_image(episode, "still_path")
         art = {"icon": "DefaultVideo.png", "thumb": still_path, "poster": still_path, "fanart": still_path}
-        return EpisodeItem(self._show_id, self._season_number, episode_number, title=title, info=info, art=art)
+        return EpisodeItem(self._show_id, self._season_number, episode_number,
+                           title=title, info=info, art=art, cast=get_cast(cast))
 
     def episodes(self):
         for episode in self._data["episodes"]:
