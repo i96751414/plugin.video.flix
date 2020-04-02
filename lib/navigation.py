@@ -37,6 +37,10 @@ def list_item(label, icon):
     return item
 
 
+def media(func, *args, **kwargs):
+    return "PlayMedia({})".format(plugin.url_for(func, *args, **kwargs))
+
+
 def handle_page(data, func, *args, **kwargs):
     page = int(kwargs.get("page", 1))
     if page < data["total_pages"]:
@@ -253,20 +257,24 @@ def get_shows(call, **kwargs):
 
 @plugin.route("/search")
 def search():
-    choice = Dialog().select(translate(30124), [translate(30125), translate(30126), translate(30127)])
+    choice = Dialog().select(translate(30124), [translate(30125 + i) for i in range(4)])
     if choice == 0:
-        query = Dialog().input(translate(30124) + ": " + translate(30125))
         search_type = "movie"
     elif choice == 1:
-        query = Dialog().input(translate(30124) + ": " + translate(30126))
         search_type = "show"
     elif choice == 2:
-        query = Dialog().input(translate(30124) + ": " + translate(30127))
         search_type = "person"
+    elif choice == 3:
+        search_type = None
     else:
         return
+
+    query = Dialog().input(translate(30124) + ": " + translate(30125 + choice))
     if query:
-        container_update(handle_search, search_type, query)
+        if search_type is None:
+            executebuiltin(media(play_search, query))
+        else:
+            container_update(handle_search, search_type, query)
 
 
 @plugin.route("/search/<search_type>/<query>")
