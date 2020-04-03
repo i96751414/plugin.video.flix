@@ -11,7 +11,7 @@ from xbmcplugin import addDirectoryItem, endOfDirectory, setContent
 from lib import tmdb
 from lib.api.flix.kodi import ADDON_PATH, ADDON_NAME, set_logger, notification, translate, Progress
 from lib.providers import play_search, play_movie, play_episode
-from lib.settings import get_language
+from lib.settings import get_language, include_adult_content
 
 MOVIES_TYPE = "movies"
 SHOWS_TYPE = "tvshows"
@@ -129,11 +129,10 @@ def discover_select(media_type):
     if result < 0:
         return
 
-    language = get_language()
-    kwargs = {"language": language}
+    kwargs = {}
     if result == 1:
         genres_handle = tmdb.Genres().movie_list if media_type == MOVIES_TYPE else tmdb.Genres().tv_list
-        genres_dict = tmdb.get_genres_by_name(genres_handle(language=language))
+        genres_dict = tmdb.get_genres_by_name(genres_handle(language=get_language()))
         genres_names = sorted(genres_dict.keys())
         selected_genre = Dialog().select("{} - {}".format(translate(30100), translate(30106)), genres_names)
         if selected_genre < 0:
@@ -149,14 +148,15 @@ def discover_select(media_type):
     container_update(handler, **kwargs)
 
 
-@plugin.route("/discover/movies/<language>")
-@plugin.route("/discover/movies/<language>/<page>")
-@plugin.route("/discover/movies/by_year/<year>/<language>")
-@plugin.route("/discover/movies/by_year/<year>/<language>/<page>")
-@plugin.route("/discover/movies/by_genre/<with_genres>/<language>")
-@plugin.route("/discover/movies/by_genre/<with_genres>/<language>/<page>")
+@plugin.route("/discover/movies")
+@plugin.route("/discover/movies/<page>")
+@plugin.route("/discover/movies/by_year/<year>")
+@plugin.route("/discover/movies/by_year/<year>/<page>")
+@plugin.route("/discover/movies/by_genre/<with_genres>")
+@plugin.route("/discover/movies/by_genre/<with_genres>/<page>")
 def discover_movies(**kwargs):
     setContent(plugin.handle, MOVIES_TYPE)
+    kwargs.setdefault("include_adult", include_adult_content())
     data = tmdb.Discover().movie(**kwargs)
     for movie_id in progress(tmdb.get_ids(data)):
         add_movie(movie_id)
@@ -164,14 +164,15 @@ def discover_movies(**kwargs):
     endOfDirectory(plugin.handle)
 
 
-@plugin.route("/discover/shows/<language>")
-@plugin.route("/discover/shows/<language>/<page>")
-@plugin.route("/discover/shows/by_year/<first_air_date_year>/<language>")
-@plugin.route("/discover/shows/by_year/<first_air_date_year>/<language>/<page>")
-@plugin.route("/discover/shows/by_genre/<with_genres>/<language>")
-@plugin.route("/discover/shows/by_genre/<with_genres>/<language>/<page>")
+@plugin.route("/discover/shows")
+@plugin.route("/discover/shows/<page>")
+@plugin.route("/discover/shows/by_year/<first_air_date_year>")
+@plugin.route("/discover/shows/by_year/<first_air_date_year>/<page>")
+@plugin.route("/discover/shows/by_genre/<with_genres>")
+@plugin.route("/discover/shows/by_genre/<with_genres>/<page>")
 def discover_shows(**kwargs):
     setContent(plugin.handle, SHOWS_TYPE)
+    kwargs.setdefault("include_adult", include_adult_content())
     data = tmdb.Discover().tv(**kwargs)
     for show_id in progress(tmdb.get_ids(data)):
         add_show(show_id)
@@ -280,6 +281,7 @@ def search():
 @plugin.route("/search/<search_type>/<query>")
 @plugin.route("/search/<search_type>/<query>/<page>")
 def handle_search(search_type, **kwargs):
+    kwargs.setdefault("include_adult", include_adult_content())
     if search_type == "movie":
         setContent(plugin.handle, MOVIES_TYPE)
         data = tmdb.Search().movie(**kwargs)

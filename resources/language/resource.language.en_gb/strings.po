@@ -46,6 +46,10 @@ msgctxt "#30006"
 msgid "Providers timeout (seconds)"
 msgstr ""
 
+msgctxt "#30007"
+msgid "Include adult content"
+msgstr ""
+
 # Navigation
 msgctxt "#30100"
 msgid "Discover"

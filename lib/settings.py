@@ -19,3 +19,7 @@ def get_language():
 
 def get_providers_timeout():
     return get_int_setting("providers_timeout")
+
+
+def include_adult_content():
+    return get_setting("include_adult_content")
