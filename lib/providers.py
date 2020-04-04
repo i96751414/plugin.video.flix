@@ -8,8 +8,12 @@ from lib.api.flix.kodi import ADDON_NAME, Busy, translate, notification
 # noinspection PyProtectedMember
 from lib.api.flix.provider import get_providers, send_to_providers, ProviderListener, ProviderResult
 from lib.dialog_select import dialog_select
-from lib.settings import get_providers_timeout
+from lib.settings import get_providers_timeout, get_resolve_timeout
 from lib.tmdb import VideoItem, Movie, Show, Season
+
+
+class ResolveTimeoutError(Exception):
+    pass
 
 
 class ProviderListenerDialog(ProviderListener):
@@ -32,22 +36,25 @@ class ProviderListenerDialog(ProviderListener):
         return super(ProviderListenerDialog, self).__exit__(*args, **kwargs)
 
 
-def run_providers_method(method, *args, **kwargs):
+def run_providers_method(timeout, method, *args, **kwargs):
     providers = get_providers()
-    with ProviderListenerDialog(providers, method, timeout=get_providers_timeout()) as listener:
+    with ProviderListenerDialog(providers, method, timeout=timeout) as listener:
         send_to_providers(providers, method, *args, **kwargs)
     return listener.data
 
 
-def run_provider_method(provider, method, *args, **kwargs):
-    with ProviderListener((provider,), method, timeout=get_providers_timeout()) as listener:
+def run_provider_method(provider, timeout, method, *args, **kwargs):
+    with ProviderListener((provider,), method, timeout=timeout) as listener:
         send_to_providers((provider,), method, *args, **kwargs)
-    return listener.data.get(provider)
+    try:
+        return listener.data[provider]
+    except KeyError:
+        raise ResolveTimeoutError("Timeout reached")
 
 
 def get_providers_results(method, *args, **kwargs):
     results = []
-    data = run_providers_method(method, *args, **kwargs)
+    data = run_providers_method(get_providers_timeout(), method, *args, **kwargs)
     for provider, provider_results in data.items():
         if not isinstance(provider_results, (tuple, list)):
             logging.error("Expecting list or tuple as results for %s:%s", provider, method)
@@ -79,9 +86,15 @@ def play(item, method, *args, **kwargs):
                 setResolvedUrl(handle, True, item.to_list_item(path=provider_result.url))
             else:
                 logging.debug("Need to call 'resolve' from provider %s", provider)
-                url = run_provider_method(provider, "resolve", handle, provider_result.provider_data)
+                try:
+                    url = run_provider_method(provider, get_resolve_timeout(),
+                                              "resolve", handle, provider_result.provider_data)
+                except ResolveTimeoutError:
+                    logging.warning("Provider %s took too much time to resolve", provider)
+                    notification(translate(30129))
+                    return
                 if url is None:
-                    logging.debug("No url from 'resolve' method. Assuming the provider will invoke the player")
+                    logging.debug("No url from 'resolve' method. Assuming the provider invoked the player")
                 else:
                     logging.debug("Going to play resolved url '%s' from provider %s", url, provider)
                     setResolvedUrl(handle, True, item.to_list_item(path=url))

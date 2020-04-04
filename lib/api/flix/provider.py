@@ -249,8 +249,8 @@ class ProviderListener(xbmc.Monitor):
         if kwargs.get("reset"):
             self._start_time = time.time()
         timeout = kwargs.get("timeout", self._timeout)
-        while not (self.is_complete() or self.abortRequested() or 0 < timeout < time.time() - self._start_time):
-            xbmc.sleep(200)
+        while not (self.is_complete() or 0 < timeout < time.time() - self._start_time or self.waitForAbort(0.2)):
+            pass
 
     @property
     def data(self):
