@@ -167,21 +167,16 @@ class Provider(object):
         """
         raise NotImplementedError("'search_episode' method must be implemented")
 
-    def resolve(self, handle, provider_data):
+    def resolve(self, provider_data):
         """
         Resolve method is only called in cases where the provider has not set (:attr:`ProviderResult.url`)
         but did set the (:attr:`ProviderResult.provider_data`) parameter (which will be used here).
         This may be useful in cases where the `url` can't be obtained right away.
 
-        In cases where no url is returned, it is expected a call to :func:`xbmcplugin.setResolvedUrl`
-        from this method (using the provided `handle`), otherwise the player will not start.
-
-        :param handle: The calling plugin handle - to be used in :func:`xbmcplugin.setResolvedUrl`, if needed.
-        :type handle: int
         :param provider_data: `provided_data` from result (:class:`ProviderResult`) .
         :type provider_data: any
-        :return: The url to be played. If None, it is assumed the script will invoke the player by itself.
-        :rtype: str or None
+        :return: The url to be played.
+        :rtype: str
         """
         raise NotImplementedError("'resolve' method must be implemented")
 

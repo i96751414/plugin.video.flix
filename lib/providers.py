@@ -87,14 +87,10 @@ def play(item, method, *args, **kwargs):
             else:
                 logging.debug("Need to call 'resolve' from provider %s", provider)
                 try:
-                    url = run_provider_method(provider, get_resolve_timeout(),
-                                              "resolve", handle, provider_result.provider_data)
+                    url = run_provider_method(provider, get_resolve_timeout(), "resolve", provider_result.provider_data)
                 except ResolveTimeoutError:
                     logging.warning("Provider %s took too much time to resolve", provider)
                     notification(translate(30129))
-                    return
-                if url is None:
-                    logging.debug("No url from 'resolve' method. Assuming the provider invoked the player")
                 else:
                     logging.debug("Going to play resolved url '%s' from provider %s", url, provider)
                     setResolvedUrl(handle, True, item.to_list_item(path=url))
