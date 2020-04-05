@@ -35,3 +35,7 @@ def get_os_username():
 
 def get_os_password():
     return get_setting("os_password")
+
+
+def get_os_folder():
+    return get_setting("os_folder")

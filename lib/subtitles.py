@@ -12,7 +12,7 @@ import xbmcplugin
 from lib.api.flix.kodi import ADDON_ID, ADDON_DATA
 from lib.api.flix.utils import str_to_unicode
 from lib.opensubtitles import OpenSubtitles, SearchPayload
-from lib.settings import get_os_username, get_os_password
+from lib.settings import get_os_username, get_os_password, get_os_folder
 
 try:
     from urllib.parse import parse_qs, urlencode
@@ -76,9 +76,11 @@ def get_from_params(params, key, **kwargs):
 
 class SubtitlesService(object):
     def __init__(self, handle=None, params=None):
-        self._subtitles_dir = os.path.join(ADDON_DATA, "subtitles")
-        if not os.path.exists(self._subtitles_dir):
-            os.makedirs(self._subtitles_dir)
+        self._subtitles_dir = get_os_folder()
+        if not self._subtitles_dir or not os.path.isdir(self._subtitles_dir):
+            self._subtitles_dir = os.path.join(ADDON_DATA, "subtitles")
+            if not os.path.exists(self._subtitles_dir):
+                os.makedirs(self._subtitles_dir)
 
         self._handle = handle or int(sys.argv[1])
         self._params = params or parse_qs(sys.argv[2].lstrip("?"))
