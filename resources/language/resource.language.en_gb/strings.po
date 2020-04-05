@@ -54,6 +54,14 @@ msgctxt "#30008"
 msgid "Providers resolve timeout (seconds)"
 msgstr ""
 
+msgctxt "#30009"
+msgid "Username"
+msgstr ""
+
+msgctxt "#30010"
+msgid "Password"
+msgstr ""
+
 # Navigation
 msgctxt "#30100"
 msgid "Discover"

@@ -27,3 +27,11 @@ def get_resolve_timeout():
 
 def include_adult_content():
     return get_setting("include_adult_content")
+
+
+def get_os_username():
+    return get_setting("os_username")
+
+
+def get_os_password():
+    return get_setting("os_password")

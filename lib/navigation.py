@@ -12,6 +12,7 @@ from lib import tmdb
 from lib.api.flix.kodi import ADDON_PATH, ADDON_NAME, set_logger, notification, translate, Progress
 from lib.providers import play_search, play_movie, play_episode
 from lib.settings import get_language, include_adult_content
+from lib.subtitles import SubtitlesService
 
 MOVIES_TYPE = "movies"
 SHOWS_TYPE = "tvshows"
@@ -92,6 +93,10 @@ def add_episode(episode):
 
 @plugin.route("/")
 def index():
+    if "action" in plugin.args:
+        SubtitlesService(handle=plugin.handle, params=plugin.args).run()
+        return
+
     addDirectoryItem(plugin.handle, plugin.url_for(discover), li(30100, "discover.png"), isFolder=True)
     addDirectoryItem(plugin.handle, plugin.url_for(movies), li(30101, "movies.png"), isFolder=True)
     addDirectoryItem(plugin.handle, plugin.url_for(shows), li(30102, "series.png"), isFolder=True)

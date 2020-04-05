@@ -4,6 +4,7 @@
         <import addon="xbmc.python" version="2.24.0"/>
         <import addon="xbmc.addon" version="16.0.0"/>
         <import addon="script.module.routing" version="0.2.3"/>
+        <import addon="script.module.requests" version="2.22.0"/>
         <import addon="script.module.simplecache" version="1.0.18"/>
         <import addon="script.module.tmdbsimple" version="2.2.0"/>
     </requires>
@@ -11,6 +12,7 @@
         <provides>video</provides>
     </extension>
     <extension point="xbmc.python.module" library="lib/api"/>
+    <extension point="xbmc.subtitle.module" library="navigation.py"/>
     <extension point="xbmc.addon.metadata">
         <platform>all</platform>
         <license>See https://github.com/i96751414/plugin.video.flix/blob/master/LICENSE</license>

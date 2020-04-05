@@ -1,5 +1,6 @@
 flake8
 # sphinx
+requests
 tmdbsimple
 https://github.com/romanvm/Kodistubs/tarball/master
 https://github.com/tamland/kodi-plugin-routing/tarball/master
