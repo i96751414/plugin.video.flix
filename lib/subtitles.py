@@ -86,25 +86,15 @@ class SubtitlesService(object):
         self._api.login(get_os_username(), get_os_password())
 
     def _add_result(self, result):
-        list_item = xbmcgui.ListItem(
-            label=result.language_name,
-            label2=result.sub_file_name,
-            iconImage=str(round(float(result.sub_rating) / 2)),
-            thumbnailImage=result.iso_639,
-        )
-
+        list_item = xbmcgui.ListItem(label=result.language_name, label2=result.sub_file_name)
+        list_item.setArt({"icon": str(int(round(float(result.sub_rating) / 2))), "thumb": result.iso_639})
         list_item.setProperty("sync", "true" if result.matched_by == "moviehash" else "false")
         list_item.setProperty("hearing_imp", "true" if result.sub_hearing_impaired == "1" else "false")
 
         url = "plugin://{}/?{}".format(ADDON_ID, urlencode({
             "action": "download", "name": str_to_unicode(result.sub_file_name), "url": result.sub_download_link}))
 
-        xbmcplugin.addDirectoryItem(
-            handle=self._handle,
-            url=url,
-            listitem=list_item,
-            isFolder=False,
-        )
+        xbmcplugin.addDirectoryItem(self._handle, url, list_item)
 
     def _get_query_languages(self):
         return ",".join([convert_language_iso_639_2(language) for language in self._get_param("languages").split(",")])
