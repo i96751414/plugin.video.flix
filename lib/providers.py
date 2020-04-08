@@ -75,8 +75,11 @@ def play(item, method, *args, **kwargs):
         results = get_providers_results(method, *args, **kwargs)
     if results:
         dialog = dialog_select(translate(30113))
-        for _, provider_result in results:
-            dialog.add_item(label=provider_result.label, label2=provider_result.label2, icon=provider_result.icon)
+        for provider, provider_result in results:
+            try:
+                dialog.add_item(label=provider_result.label, label2=provider_result.label2, icon=provider_result.icon)
+            except Exception as e:
+                logging.error("Invalid result from provider %s: %s", provider, e, exc_info=True)
         dialog.doModal()
         if dialog.selected >= 0:
             provider, provider_result = results[dialog.selected]
