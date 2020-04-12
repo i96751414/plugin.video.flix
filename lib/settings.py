@@ -39,3 +39,7 @@ def get_os_password():
 
 def get_os_folder():
     return get_setting("os_folder")
+
+
+def get_scraper_thrads():
+    return get_int_setting("scraper_threads")

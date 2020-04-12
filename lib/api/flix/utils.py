@@ -28,6 +28,7 @@ Module `utils` provides some compatibility utilities for both Python 2 and 3.
 """
 
 import sys
+from multiprocessing.pool import ThreadPool
 
 PY3 = sys.version_info.major >= 3
 
@@ -61,3 +62,24 @@ else:
 
     def unicode_to_str(s):
         return s.encode("utf-8")
+
+
+def get_data(func, iterable, threads=5, chunk_size=1):
+    """
+    Apply `func` to each element in `iterable`, collecting the results in a generator that is returned.
+
+    :param func: The function to apply to each element.
+    :param iterable: Iterable containing `func` inputs.
+    :param threads: Number of workers.
+    :param chunk_size: Tasks chunk size.
+    """
+    if threads <= 1:
+        for i in iterable:
+            yield func(i)
+    else:
+        pool = ThreadPool(threads)
+        results = pool.imap(func, iterable, chunksize=chunk_size)
+        for r in results:
+            yield r
+        pool.close()
+        pool.join()

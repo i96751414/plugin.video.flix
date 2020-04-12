@@ -235,13 +235,14 @@ class Progress(object):
     Iterable wrapper for showing and automatically update/close a progress dialog.
 
     :param iterable: The iterable to be wrapped.
+    :param length: The iterable length (optional).
     :param impl: The dialog implementation to use (default :class:`xbmcgui.DialogProgressBG`).
     :param kwargs: Arguments to pass to `dialog.create()` method.
     """
 
-    def __init__(self, iterable, impl=xbmcgui.DialogProgressBG, **kwargs):
+    def __init__(self, iterable, length=None, impl=xbmcgui.DialogProgressBG, **kwargs):
         self._iterable = iterable
-        self._length = len(iterable)
+        self._length = length or len(iterable)
         self._impl = impl
         self._kwargs = kwargs
         self._dialog = None

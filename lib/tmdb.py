@@ -5,8 +5,9 @@ import tmdbsimple
 import xbmcgui
 
 from lib.api.flix.kodi import ADDON_ID
+from lib.api.flix.utils import get_data
 from lib.kodi_cache import KodiCache
-from lib.settings import is_cache_enabled, prefer_original_titles, get_language
+from lib.settings import is_cache_enabled, prefer_original_titles, get_language, get_scraper_thrads
 
 IMAGE_BASE_URL = "https://image.tmdb.org/t/p/original"
 tmdbsimple.API_KEY = "eee9ac1822295afd8dadb555a0cc4ea8"
@@ -490,3 +491,23 @@ def get_person_credits(person_id, cast=True, crew=False):
         credits_list += list(_get_credits(data.get("crew", [])))
     credits_list.sort(key=lambda v: v[2], reverse=True)
     return credits_list
+
+
+def get_movies(data):
+    ids = get_ids(data)
+    return get_data(Movie, ids, threads=get_scraper_thrads()), len(ids)
+
+
+def get_shows(data):
+    ids = get_ids(data)
+    return get_data(Show, ids, threads=get_scraper_thrads()), len(ids)
+
+
+def get_credits_media(credits_entry):
+    tmdb_id, is_movie, _ = credits_entry
+    return Movie(tmdb_id) if is_movie else Show(tmdb_id), is_movie
+
+
+def get_person_media(person_id):
+    credits_list = get_person_credits(person_id)
+    return get_data(get_credits_media, credits_list, threads=get_scraper_thrads()), len(credits_list)

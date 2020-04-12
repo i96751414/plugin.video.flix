@@ -24,8 +24,8 @@ plugin.add_route(play_movie, "/providers/play_movie/<movie_id>")
 plugin.add_route(play_episode, "/providers/play_episode/<show_id>/<season_number>/<episode_number>")
 
 
-def progress(obj):
-    return Progress(obj, heading=ADDON_NAME, message=translate(30110))
+def progress(obj, length=None):
+    return Progress(obj, length=length, heading=ADDON_NAME, message=translate(30110))
 
 
 def li(tid, icon):
@@ -57,19 +57,15 @@ def add_person(person_li, person_id):
     addDirectoryItem(plugin.handle, plugin.url_for(handle_person, person_id), person_li, isFolder=True)
 
 
-def add_movie(movie_id):
-    addDirectoryItem(
-        plugin.handle,
-        plugin.url_for(play_movie, movie_id),
-        tmdb.Movie(movie_id).to_list_item(playable=True),
-    )
+def add_movie(movie):
+    addDirectoryItem(plugin.handle, plugin.url_for(play_movie, movie.movie_id), movie.to_list_item(playable=True))
 
 
-def add_show(show_id):
+def add_show(show):
     addDirectoryItem(
         plugin.handle,
-        plugin.url_for(handle_show, show_id),
-        tmdb.Show(show_id).to_list_item(),
+        plugin.url_for(handle_show, show.show_id),
+        show.to_list_item(),
         isFolder=True,
     )
 
@@ -163,8 +159,8 @@ def discover_movies(**kwargs):
     setContent(plugin.handle, MOVIES_TYPE)
     kwargs.setdefault("include_adult", include_adult_content())
     data = tmdb.Discover().movie(**kwargs)
-    for movie_id in progress(tmdb.get_ids(data)):
-        add_movie(movie_id)
+    for movie in progress(*tmdb.get_movies(data)):
+        add_movie(movie)
     handle_page(data, discover_movies, **kwargs)
     endOfDirectory(plugin.handle)
 
@@ -179,8 +175,8 @@ def discover_shows(**kwargs):
     setContent(plugin.handle, SHOWS_TYPE)
     kwargs.setdefault("include_adult", include_adult_content())
     data = tmdb.Discover().tv(**kwargs)
-    for show_id in progress(tmdb.get_ids(data)):
-        add_show(show_id)
+    for show in progress(*tmdb.get_shows(data)):
+        add_show(show)
     handle_page(data, discover_shows, **kwargs)
     endOfDirectory(plugin.handle)
 
@@ -210,8 +206,8 @@ def movies():
 def trending_movies(**kwargs):
     setContent(plugin.handle, MOVIES_TYPE)
     data = tmdb.Trending("movie", "week").get_trending(**kwargs)
-    for tmdb_id in progress(tmdb.get_ids(data)):
-        add_movie(tmdb_id)
+    for movie in progress(*tmdb.get_movies(data)):
+        add_movie(movie)
     handle_page(data, trending_movies, **kwargs)
     endOfDirectory(plugin.handle)
 
@@ -222,8 +218,8 @@ def get_movies(call, **kwargs):
     setContent(plugin.handle, MOVIES_TYPE)
     logging.debug("Going to call tmdb.Movies().%s()", call)
     data = getattr(tmdb.Movies(), call)(**kwargs)
-    for tmdb_id in progress(tmdb.get_ids(data)):
-        add_movie(tmdb_id)
+    for movie in progress(*tmdb.get_movies(data)):
+        add_movie(movie)
     handle_page(data, get_movies, call=call, **kwargs)
     endOfDirectory(plugin.handle)
 
@@ -243,8 +239,8 @@ def shows():
 def trending_shows(**kwargs):
     setContent(plugin.handle, SHOWS_TYPE)
     data = tmdb.Trending("tv", "week").get_trending(**kwargs)
-    for tmdb_id in progress(tmdb.get_ids(data)):
-        add_show(tmdb_id)
+    for show in progress(*tmdb.get_shows(data)):
+        add_show(show)
     handle_page(data, trending_shows, **kwargs)
     endOfDirectory(plugin.handle)
 
@@ -255,8 +251,8 @@ def get_shows(call, **kwargs):
     setContent(plugin.handle, SHOWS_TYPE)
     logging.debug("Going to call tmdb.TV().%s()", call)
     data = getattr(tmdb.TV(), call)(**kwargs)
-    for tmdb_id in progress(tmdb.get_ids(data)):
-        add_show(tmdb_id)
+    for show in progress(*tmdb.get_shows(data)):
+        add_show(show)
     handle_page(data, get_shows, call=call, **kwargs)
     endOfDirectory(plugin.handle)
 
@@ -290,13 +286,13 @@ def handle_search(search_type, **kwargs):
     if search_type == "movie":
         setContent(plugin.handle, MOVIES_TYPE)
         data = tmdb.Search().movie(**kwargs)
-        for movie_id in progress(tmdb.get_ids(data)):
-            add_movie(movie_id)
+        for movie in progress(*tmdb.get_movies(data)):
+            add_movie(movie)
     elif search_type == "show":
         setContent(plugin.handle, SHOWS_TYPE)
         data = tmdb.Search().tv(**kwargs)
-        for show_id in progress(tmdb.get_ids(data)):
-            add_show(show_id)
+        for show in progress(*tmdb.get_shows(data)):
+            add_show(show)
     elif search_type == "person":
         data = tmdb.Search().person(**kwargs)
         for person_li, person_id in tmdb.person_list_items(data):
@@ -315,8 +311,8 @@ def handle_search(search_type, **kwargs):
 
 @plugin.route("/handle_person/<person_id>")
 def handle_person(person_id):
-    for tmdb_id, is_movie, _ in progress(tmdb.get_person_credits(person_id)):
-        add_movie(tmdb_id) if is_movie else add_show(tmdb_id)
+    for m, is_movie in progress(*tmdb.get_person_media(person_id)):
+        add_movie(m) if is_movie else add_show(m)
     endOfDirectory(plugin.handle)
 
 

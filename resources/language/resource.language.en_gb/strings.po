@@ -66,6 +66,10 @@ msgctxt "#30011"
 msgid "Subtitles folder"
 msgstr ""
 
+msgctxt "#30012"
+msgid "Scraper threads number"
+msgstr ""
+
 # Navigation
 msgctxt "#30100"
 msgid "Discover"
