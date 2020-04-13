@@ -6,7 +6,7 @@ import os
 from routing import Plugin
 from xbmc import executebuiltin
 from xbmcgui import ListItem, Dialog
-from xbmcplugin import addDirectoryItem, endOfDirectory, setContent
+from xbmcplugin import addDirectoryItem, endOfDirectory, setContent, setResolvedUrl
 
 from lib import tmdb
 from lib.api.flix.kodi import ADDON_PATH, ADDON_NAME, set_logger, notification, translate, Progress
@@ -364,6 +364,7 @@ def play_trailer(media_type, tmdb_id, season_number=None, episode_number=None, l
 
     if language == fallback_language:
         notification(translate(30108))
+        setResolvedUrl(plugin.handle, False, ListItem())
     else:
         play_trailer(
             media_type, tmdb_id,

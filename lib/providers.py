@@ -1,7 +1,7 @@
 import logging
 import sys
 
-from xbmcgui import DialogProgressBG
+from xbmcgui import DialogProgressBG, ListItem
 from xbmcplugin import setResolvedUrl
 
 from lib.api.flix.kodi import ADDON_NAME, Busy, translate, notification
@@ -73,6 +73,7 @@ def get_providers_results(method, *args, **kwargs):
 def play(item, method, *args, **kwargs):
     with Busy():
         results = get_providers_results(method, *args, **kwargs)
+    handle = int(sys.argv[1])
     if results:
         dialog = dialog_select(translate(30113))
         for provider, provider_result in results:
@@ -83,7 +84,6 @@ def play(item, method, *args, **kwargs):
         dialog.doModal()
         if dialog.selected >= 0:
             provider, provider_result = results[dialog.selected]
-            handle = int(sys.argv[1])
             if provider_result.url:
                 logging.debug("Going to play url '%s' from provider %s", provider_result.url, provider)
                 setResolvedUrl(handle, True, item.to_list_item(path=provider_result.url))
@@ -93,11 +93,13 @@ def play(item, method, *args, **kwargs):
                     url = run_provider_method(provider, get_resolve_timeout(), "resolve", provider_result.provider_data)
                 except ResolveTimeoutError:
                     logging.warning("Provider %s took too much time to resolve", provider)
+                    setResolvedUrl(handle, False, ListItem())
                     notification(translate(30129))
                 else:
                     logging.debug("Going to play resolved url '%s' from provider %s", url, provider)
                     setResolvedUrl(handle, True, item.to_list_item(path=url))
     else:
+        setResolvedUrl(handle, False, ListItem())
         notification(translate(30112))
 
 
