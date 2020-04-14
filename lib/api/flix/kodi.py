@@ -242,7 +242,12 @@ class Progress(object):
 
     def __init__(self, iterable, length=None, impl=xbmcgui.DialogProgressBG, **kwargs):
         self._iterable = iterable
-        self._length = length or len(iterable)
+        if length is None:
+            if not hasattr(self._iterable, "__len__"):
+                self._iterable = list(self._iterable)
+            self._length = len(self._iterable)
+        else:
+            self._length = length
         self._impl = impl
         self._kwargs = kwargs
         self._dialog = None
