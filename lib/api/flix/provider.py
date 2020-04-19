@@ -247,6 +247,10 @@ class ProviderListener(xbmc.Monitor):
         while not (self.is_complete() or 0 < timeout < time.time() - self._start_time or self.waitForAbort(0.2)):
             pass
 
+    def get_missing(self):
+        with self._lock:
+            return [k for k, v in self._waiting.items() if v]
+
     @property
     def data(self):
         return self._data
@@ -256,4 +260,7 @@ class ProviderListener(xbmc.Monitor):
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.wait()
+        missing = self.get_missing()
+        if missing:
+            logging.warning("Provider(s) timed out: %s", ", ".join(missing))
         return False
