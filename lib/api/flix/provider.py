@@ -202,8 +202,12 @@ class Provider(object):
 
         _, sender, method, data_b64 = sys.argv
         if method in self._methods:
-            data = json.loads(base64.b64decode(data_b64))
-            value = self._methods[method](*data.get("args", []), **data.get("kwargs", {}))
+            try:
+                data = json.loads(base64.b64decode(data_b64))
+                value = self._methods[method](*data.get("args", []), **data.get("kwargs", {}))
+            except Exception as e:
+                self.logger.error("Failed running method '%s' with data '%s': %s", method, data_b64, e, exc_info=True)
+                value = None
             if not notify_all(ADDON_ID, "{}.{}".format(sender, method), value):
                 self.logger.error("Failed sending provider data")
         else:
