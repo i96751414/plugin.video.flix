@@ -4,7 +4,7 @@ import sys
 from xbmcgui import DialogProgressBG, ListItem
 from xbmcplugin import setResolvedUrl
 
-from lib.api.flix.kodi import ADDON_NAME, Busy, translate, notification
+from lib.api.flix.kodi import ADDON_NAME, translate, notification
 # noinspection PyProtectedMember
 from lib.api.flix.provider import get_providers, send_to_providers, ProviderListener, ProviderResult
 from lib.dialog_select import dialog_select
@@ -28,12 +28,15 @@ class ProviderListenerDialog(ProviderListener):
         self._dialog.update(int(100 * self._count / self._total))
 
     def __enter__(self):
+        ret = super(ProviderListenerDialog, self).__enter__()
         self._dialog.create(ADDON_NAME, translate(30111))
-        return super(ProviderListenerDialog, self).__enter__()
+        return ret
 
     def __exit__(self, *args, **kwargs):
-        self._dialog.close()
-        return super(ProviderListenerDialog, self).__exit__(*args, **kwargs)
+        try:
+            return super(ProviderListenerDialog, self).__exit__(*args, **kwargs)
+        finally:
+            self._dialog.close()
 
 
 def run_providers_method(timeout, method, *args, **kwargs):
@@ -71,8 +74,7 @@ def get_providers_results(method, *args, **kwargs):
 
 
 def play(item, method, *args, **kwargs):
-    with Busy():
-        results = get_providers_results(method, *args, **kwargs)
+    results = get_providers_results(method, *args, **kwargs)
     handle = int(sys.argv[1])
     if results:
         dialog = dialog_select(translate(30113))
