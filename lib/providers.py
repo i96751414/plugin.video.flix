@@ -123,7 +123,7 @@ def play_episode(show_id, season_number, episode_number):
         "search_episode",
         show_id,
         show.get_info("originaltitle"),
-        season_number,
-        episode_number,
+        int(season_number),
+        int(episode_number),
         show.alternative_titles,
     )
