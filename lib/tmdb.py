@@ -9,7 +9,7 @@ from lib.api.flix.utils import get_data
 from lib.kodi_cache import KodiCache
 from lib.settings import is_cache_enabled, prefer_original_titles, get_language, get_scraper_thrads
 
-IMAGE_BASE_URL = "https://image.tmdb.org/t/p/original"
+IMAGE_BASE_URL = "https://image.tmdb.org/t/p/"
 tmdbsimple.API_KEY = "eee9ac1822295afd8dadb555a0cc4ea8"
 
 
@@ -167,9 +167,10 @@ def get_ids(data):
     return [r["id"] for r in data["results"]]
 
 
-def get_image(data, key):
+def get_image(data, key, size="original"):
+    # size: "w92", "w154", "w185", "w342", "w500", "w780" or "original"
     path = data.get(key)
-    return "" if path is None else (IMAGE_BASE_URL + path)
+    return "" if path is None else (IMAGE_BASE_URL + size + path)
 
 
 def get_genres_by_id(genres_data):
@@ -181,7 +182,7 @@ def get_genres_by_name(genres_data):
 
 
 def get_cast(cast):
-    return [{"name": c["name"], "role": c["character"], "thumbnail": get_image(c, "profile_path"), "order": i}
+    return [{"name": c["name"], "role": c["character"], "thumbnail": get_image(c, "profile_path", "w342"), "order": i}
             for i, c in enumerate(cast, 1)]
 
 
@@ -286,7 +287,7 @@ class Movie(MovieItem):
             "duration": runtime * 60 if runtime else None,
         }
 
-        icon = get_image(self._data, "poster_path")
+        icon = get_image(self._data, "poster_path", "w780")
         backdrop = get_image(self._data, "backdrop_path")
         art = {"icon": "DefaultVideo.png", "thumb": icon, "poster": icon, "fanart": backdrop}
 
@@ -353,7 +354,7 @@ class Show(ShowItem):
             "episode": self._data.get("number_of_episodes"),
         }
 
-        icon = get_image(self._data, "poster_path")
+        icon = get_image(self._data, "poster_path", "w780")
         backdrop = get_image(self._data, "backdrop_path")
         art = {"icon": "DefaultVideo.png", "thumb": icon, "poster": icon, "fanart": backdrop}
 
@@ -389,7 +390,7 @@ class Show(ShowItem):
             if overview:
                 season_info["plot"] = overview
 
-            icon = get_image(season, "poster_path")
+            icon = get_image(season, "poster_path", "w780")
             if icon:
                 season_art["thumb"] = season_art["poster"] = icon
 
@@ -465,7 +466,7 @@ class EpisodeItem(SeasonItem):
 def person_list_items(data):
     for result in data["results"]:
         list_item = xbmcgui.ListItem(result["name"])
-        icon = get_image(result, "profile_path")
+        icon = get_image(result, "profile_path", "w500")
         list_item.setArt({"icon": "DefaultActor.png", "thumb": icon, "poster": icon})
         yield list_item, result["id"]
 
