@@ -473,13 +473,16 @@ def person_list_items(data):
 def _get_credits(data_credits):
     now = datetime.now()
     for credit in data_credits:
-        release_date = credit.get("release_date")
+        media_type = credit.get("media_type")
+        if media_type == "movie":
+            release_date, is_movie = credit.get("release_date"), True
+        elif media_type == "tv":
+            release_date, is_movie = credit.get("first_air_date"), False
+        else:
+            continue
         if not release_date or datetime(*time.strptime(release_date, "%Y-%m-%d")[:6]) > now:
             continue
-        if credit.get("media_type") == "movie":
-            yield credit["id"], True, release_date
-        elif credit.get("media_type") == "movie":
-            yield credit["id"], False, release_date
+        yield credit["id"], is_movie, release_date
 
 
 def get_person_credits(person_id, cast=True, crew=False):
