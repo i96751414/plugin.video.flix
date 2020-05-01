@@ -60,7 +60,7 @@ msgstr "Nome de Utilizador"
 
 msgctxt "#30010"
 msgid "Password"
-msgstr "Palavra pass"
+msgstr "Senha"
 
 msgctxt "#30011"
 msgid "Subtitles folder"
