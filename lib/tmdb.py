@@ -499,12 +499,12 @@ def get_person_credits(person_id, cast=True, crew=False):
 
 def get_movies(data):
     ids = get_ids(data)
-    return get_data(Movie, ids, threads=get_scraper_thrads()), len(ids)
+    return get_data(Movie, ids, threads=get_scraper_thrads(), yield_exceptions=False), len(ids)
 
 
 def get_shows(data):
     ids = get_ids(data)
-    return get_data(Show, ids, threads=get_scraper_thrads()), len(ids)
+    return get_data(Show, ids, threads=get_scraper_thrads(), yield_exceptions=False), len(ids)
 
 
 def get_credits_media(credits_entry):
@@ -514,4 +514,5 @@ def get_credits_media(credits_entry):
 
 def get_person_media(person_id):
     credits_list = get_person_credits(person_id)
-    return get_data(get_credits_media, credits_list, threads=get_scraper_thrads()), len(credits_list)
+    return (get_data(get_credits_media, credits_list, threads=get_scraper_thrads(), yield_exceptions=False),
+            len(credits_list))

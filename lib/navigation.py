@@ -133,6 +133,7 @@ def discover_select(media_type):
     kwargs = {}
     if result == 1:
         genres_handle = tmdb.Genres().movie_list if media_type == MOVIES_TYPE else tmdb.Genres().tv_list
+        # noinspection PyArgumentList
         genres_dict = tmdb.get_genres_by_name(genres_handle(language=get_language()))
         genres_names = sorted(genres_dict.keys())
         selected_genre = Dialog().select("{} - {}".format(translate(30100), translate(30106)), genres_names)

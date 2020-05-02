@@ -64,7 +64,7 @@ else:
         return s.encode("utf-8")
 
 
-def get_data(func, iterable, threads=5, chunk_size=1):
+def get_data(func, iterable, threads=5, chunk_size=1, **kwargs):
     """
     Apply `func` to each element in `iterable`, collecting the results in a generator that is returned.
 
@@ -72,6 +72,7 @@ def get_data(func, iterable, threads=5, chunk_size=1):
     :param iterable: Iterable containing `func` inputs.
     :param threads: Number of workers.
     :param chunk_size: Tasks chunk size.
+    :keyword yield_exceptions: Yield (or not) exceptions. If not set, exceptions are raised.
     """
     if threads <= 1:
         for i in iterable:
@@ -79,7 +80,16 @@ def get_data(func, iterable, threads=5, chunk_size=1):
     else:
         pool = ThreadPool(threads)
         results = pool.imap(func, iterable, chunksize=chunk_size)
-        for r in results:
-            yield r
+        yield_exceptions = kwargs.get("yield_exceptions")
+        while True:
+            try:
+                yield next(results)
+            except StopIteration:
+                break
+            except Exception as e:
+                if yield_exceptions is None:
+                    raise e
+                if yield_exceptions:
+                    yield e
         pool.close()
         pool.join()
