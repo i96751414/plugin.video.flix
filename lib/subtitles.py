@@ -10,7 +10,7 @@ import xbmcgui
 import xbmcplugin
 
 from lib.api.flix.kodi import ADDON_ID, ADDON_DATA
-from lib.api.flix.utils import str_to_unicode
+from lib.api.flix.utils import unicode_to_str
 from lib.opensubtitles import OpenSubtitles, SearchPayload
 from lib.settings import get_os_username, get_os_password, get_os_folder
 
@@ -93,8 +93,8 @@ class SubtitlesService(object):
         list_item.setProperty("sync", "true" if result.matched_by == "moviehash" else "false")
         list_item.setProperty("hearing_imp", "true" if result.sub_hearing_impaired == "1" else "false")
 
-        url = "plugin://{}/?{}".format(ADDON_ID, urlencode({
-            "action": "download", "name": str_to_unicode(result.sub_file_name), "url": result.sub_download_link}))
+        url = "plugin://{}/?{}".format(ADDON_ID, urlencode(dict(
+            action="download", name=unicode_to_str(result.sub_file_name), url=result.sub_download_link)))
 
         xbmcplugin.addDirectoryItem(self._handle, url, list_item)
 
