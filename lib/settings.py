@@ -43,3 +43,7 @@ def get_os_folder():
 
 def get_scraper_thrads():
     return get_int_setting("scraper_threads")
+
+
+def auto_choose_media():
+    return get_boolean_setting("auto_choose_media")

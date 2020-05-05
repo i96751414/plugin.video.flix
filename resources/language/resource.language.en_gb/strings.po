@@ -70,6 +70,10 @@ msgctxt "#30012"
 msgid "Scraper threads number"
 msgstr ""
 
+msgctxt "#30013"
+msgid "Automatically choose media"
+msgstr ""
+
 # Navigation
 msgctxt "#30100"
 msgid "Discover"

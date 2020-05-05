@@ -8,7 +8,7 @@ from lib.api.flix.kodi import ADDON_NAME, translate, notification
 # noinspection PyProtectedMember
 from lib.api.flix.provider import get_providers, send_to_providers, ProviderListener, ProviderResult
 from lib.dialog_select import dialog_select
-from lib.settings import get_providers_timeout, get_resolve_timeout
+from lib.settings import get_providers_timeout, get_resolve_timeout, auto_choose_media
 from lib.tmdb import VideoItem, Movie, Show, Season
 
 
@@ -74,35 +74,40 @@ def get_providers_results(method, *args, **kwargs):
 
 
 def play(item, method, *args, **kwargs):
+    path = provider = None
     results = get_providers_results(method, *args, **kwargs)
     handle = int(sys.argv[1])
     if results:
-        dialog = dialog_select(translate(30113))
-        for provider, provider_result in results:
-            try:
-                dialog.add_item(label=provider_result.label, label2=provider_result.label2, icon=provider_result.icon)
-            except Exception as e:
-                logging.error("Invalid result from provider %s: %s", provider, e, exc_info=True)
-        dialog.doModal()
-        if dialog.selected >= 0:
-            provider, provider_result = results[dialog.selected]
-            if provider_result.url:
-                logging.debug("Going to play url '%s' from provider %s", provider_result.url, provider)
-                setResolvedUrl(handle, True, item.to_list_item(path=provider_result.url))
-            else:
+        if auto_choose_media():
+            selected = 0
+        else:
+            dialog = dialog_select(translate(30113))
+            for p, r in results:
+                try:
+                    dialog.add_item(label=r.label, label2=r.label2, icon=r.icon)
+                except Exception as e:
+                    logging.error("Invalid result from provider %s: %s", p, e, exc_info=True)
+            dialog.doModal()
+            selected = dialog.selected
+
+        if selected >= 0:
+            provider, provider_result = results[selected]
+            path = provider_result.url
+            if not path:
                 logging.debug("Need to call 'resolve' from provider %s", provider)
                 try:
-                    url = run_provider_method(provider, get_resolve_timeout(), "resolve", provider_result.provider_data)
+                    path = run_provider_method(
+                        provider, get_resolve_timeout(), "resolve", provider_result.provider_data)
                 except ResolveTimeoutError:
                     logging.warning("Provider %s took too much time to resolve", provider)
-                    setResolvedUrl(handle, False, ListItem())
                     notification(translate(30129))
-                else:
-                    logging.debug("Going to play resolved url '%s' from provider %s", url, provider)
-                    setResolvedUrl(handle, True, item.to_list_item(path=url))
+    else:
+        notification(translate(30112))
+    if path:
+        logging.debug("Going to play url '%s' from provider %s", path, provider)
+        setResolvedUrl(handle, True, item.to_list_item(path=path))
     else:
         setResolvedUrl(handle, False, ListItem())
-        notification(translate(30112))
 
 
 def play_search(query):
