@@ -28,7 +28,7 @@ Module `utils` provides some compatibility utilities for both Python 2 and 3.
 """
 
 import sys
-from multiprocessing.pool import ThreadPool
+from concurrent.futures import ThreadPoolExecutor
 
 PY3 = sys.version_info.major >= 3
 
@@ -64,32 +64,26 @@ else:
         return s.encode("utf-8")
 
 
-def get_data(func, iterable, threads=5, chunk_size=1, **kwargs):
+def get_data(func, iterable, threads=5, **kwargs):
     """
     Apply `func` to each element in `iterable`, collecting the results in a generator that is returned.
 
     :param func: The function to apply to each element.
     :param iterable: Iterable containing `func` inputs.
     :param threads: Number of workers.
-    :param chunk_size: Tasks chunk size.
     :keyword yield_exceptions: Yield (or not) exceptions. If not set, exceptions are raised.
     """
     if threads <= 1:
         for i in iterable:
             yield func(i)
     else:
-        pool = ThreadPool(threads)
-        results = pool.imap(func, iterable, chunksize=chunk_size)
         yield_exceptions = kwargs.get("yield_exceptions")
-        while True:
-            try:
-                yield next(results)
-            except StopIteration:
-                break
-            except Exception as e:
-                if yield_exceptions is None:
-                    raise e
-                if yield_exceptions:
-                    yield e
-        pool.close()
-        pool.join()
+        with ThreadPoolExecutor(threads) as pool:
+            for result in [pool.submit(func, args) for args in iterable]:
+                try:
+                    yield result.result()
+                except Exception as e:
+                    if yield_exceptions is None:
+                        raise e
+                    if yield_exceptions:
+                        yield e
