@@ -73,17 +73,13 @@ def get_data(func, iterable, threads=5, **kwargs):
     :param threads: Number of workers.
     :keyword yield_exceptions: Yield (or not) exceptions. If not set, exceptions are raised.
     """
-    if threads <= 1:
-        for i in iterable:
-            yield func(i)
-    else:
-        yield_exceptions = kwargs.get("yield_exceptions")
-        with ThreadPoolExecutor(threads) as pool:
-            for result in [pool.submit(func, args) for args in iterable]:
-                try:
-                    yield result.result()
-                except Exception as e:
-                    if yield_exceptions is None:
-                        raise e
-                    if yield_exceptions:
-                        yield e
+    yield_exceptions = kwargs.get("yield_exceptions")
+    with ThreadPoolExecutor(threads) as pool:
+        for result in [pool.submit(func, args) for args in iterable]:
+            try:
+                yield result.result()
+            except Exception as e:
+                if yield_exceptions is None:
+                    raise e
+                if yield_exceptions:
+                    yield e
