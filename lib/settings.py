@@ -5,6 +5,10 @@ def is_cache_enabled():
     return get_boolean_setting("cache_enabled")
 
 
+def is_search_history_enabled():
+    return get_boolean_setting("enable_search_history")
+
+
 def get_cache_expiration_days():
     return get_int_setting("cache_expiration")
 

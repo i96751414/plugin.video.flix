@@ -203,6 +203,13 @@ def get_installed_addons(addon_type="", content="unknown", enabled="all"):
     return [(a["addonid"], a["type"]) for a in data["result"]["addons"]]
 
 
+def container_refresh():
+    """
+    Refresh the current container.
+    """
+    xbmc.executebuiltin("Container.Refresh")
+
+
 def busy_dialog():
     """
     Activate busy dialog window.

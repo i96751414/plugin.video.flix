@@ -74,6 +74,14 @@ msgctxt "#30013"
 msgid "Automatically choose media"
 msgstr ""
 
+msgctxt "#30014"
+msgid "Enable search history"
+msgstr ""
+
+msgctxt "#30015"
+msgid "Clear search history"
+msgstr ""
+
 # Navigation
 msgctxt "#30100"
 msgid "Discover"
@@ -193,4 +201,16 @@ msgstr ""
 
 msgctxt "#30129"
 msgid "Provider timed out resolving"
+msgstr ""
+
+msgctxt "#30130"
+msgid "New search"
+msgstr ""
+
+msgctxt "#30131"
+msgid "Delete entry"
+msgstr ""
+
+msgctxt "#30132"
+msgid "Search history cleared"
 msgstr ""

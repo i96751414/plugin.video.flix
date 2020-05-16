@@ -74,6 +74,14 @@ msgctxt "#30013"
 msgid "Automatically choose media"
 msgstr "Escolher mídia automaticamente"
 
+msgctxt "#30014"
+msgid "Enable search history"
+msgstr "Ativar histórico de pesquisas"
+
+msgctxt "#30015"
+msgid "Clear search history"
+msgstr "Limpar histórico de pesquisas"
+
 # Navigation
 msgctxt "#30100"
 msgid "Discover"
@@ -194,3 +202,15 @@ msgstr "Tudo"
 msgctxt "#30129"
 msgid "Provider timed out resolving"
 msgstr "O provedor excedeu o tempo limite de resolução"
+
+msgctxt "#30130"
+msgid "New search"
+msgstr "Nova pesquisa"
+
+msgctxt "#30131"
+msgid "Delete entry"
+msgstr "Apagar entrada"
+
+msgctxt "#30132"
+msgid "Search history cleared"
+msgstr "Histórico de pesquisas apagado"

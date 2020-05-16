@@ -1,6 +1,7 @@
 import datetime
 import logging
 import os
+import sqlite3
 
 # noinspection PyPackageRequirements
 from routing import Plugin
@@ -9,9 +10,10 @@ from xbmcgui import ListItem, Dialog
 from xbmcplugin import addDirectoryItem, endOfDirectory, setContent, setResolvedUrl
 
 from lib import tmdb
-from lib.api.flix.kodi import ADDON_PATH, ADDON_NAME, set_logger, notification, translate, Progress
+from lib.api.flix.kodi import ADDON_PATH, ADDON_NAME, set_logger, notification, translate, Progress, container_refresh
 from lib.providers import play_search, play_movie, play_episode
-from lib.settings import get_language, include_adult_content
+from lib.settings import get_language, include_adult_content, is_search_history_enabled
+from lib.storage import SearchHistory
 from lib.subtitles import SubtitlesService
 
 MOVIES_TYPE = "movies"
@@ -19,9 +21,6 @@ SHOWS_TYPE = "tvshows"
 EPISODES_TYPE = "episodes"
 
 plugin = Plugin()
-plugin.add_route(play_search, "/providers/play_search/<query>")
-plugin.add_route(play_movie, "/providers/play_movie/<movie_id>")
-plugin.add_route(play_episode, "/providers/play_episode/<show_id>/<season_number>/<episode_number>")
 
 
 def progress(obj, length=None):
@@ -42,9 +41,19 @@ def media(func, *args, **kwargs):
     return "PlayMedia({})".format(plugin.url_for(func, *args, **kwargs))
 
 
+def action(func, *args, **kwargs):
+    return "RunPlugin({})".format(plugin.url_for(func, *args, **kwargs))
+
+
+def get_plugin_query(key):
+    plugin_action = plugin.args.get(key)
+    return None if plugin_action is None else plugin_action[0]
+
+
 def handle_page(data, func, *args, **kwargs):
     page = int(kwargs.get("page", 1))
-    if page < data["total_pages"]:
+    total_pages = data["total_pages"] if isinstance(data, dict) else data
+    if page < total_pages:
         kwargs["page"] = page + 1
         addDirectoryItem(plugin.handle, plugin.url_for(func, *args, **kwargs), li(30105, "next.png"), isFolder=True)
 
@@ -260,41 +269,98 @@ def get_shows(call, **kwargs):
 
 @plugin.route("/search")
 def search():
-    choice = Dialog().select(translate(30124), [translate(30125 + i) for i in range(4)])
-    if choice == 0:
-        search_type = "movie"
-    elif choice == 1:
-        search_type = "show"
-    elif choice == 2:
-        search_type = "person"
-    elif choice == 3:
-        search_type = None
-    else:
+    # 0 - movie, 1 - show, 2 - person, 3 - all
+    search_type = Dialog().select(translate(30124), [translate(30125 + i) for i in range(4)])
+    if search_type < 0:
         return
+    if is_search_history_enabled():
+        container_update(search_history, search_type)
+    else:
+        do_query(search_type)
 
-    query = Dialog().input(translate(30124) + ": " + translate(30125 + choice))
+
+@plugin.route("/search_history/<search_type>")
+@plugin.route("/search_history/<search_type>/<page>")
+def search_history(search_type, page=1):
+    search_type = int(search_type)
+    page = int(page)
+    with SearchHistory() as s:
+        addDirectoryItem(
+            plugin.handle,
+            plugin.url_for(do_query, search_type=search_type, search_action="store"),
+            li(30130, "new_search.png"),
+        )
+        for (search_id, query,) in s.get_page(search_type, page):
+            item = list_item(query, "search.png")
+            item.addContextMenuItems([
+                (translate(30131), action(delete_search_entry, search_id)),
+            ])
+            addDirectoryItem(
+                plugin.handle,
+                plugin.url_for(do_query, search_type=search_type, search_action="update", query=query),
+                item,
+            )
+        handle_page(s.pages_count(), search_history, search_type=search_type, page=page)
+    endOfDirectory(plugin.handle, True)
+
+
+@plugin.route("/search_entry/delete/<search_id>")
+def delete_search_entry(search_id):
+    with SearchHistory() as s:
+        s.delete_entry_by_id(int(search_id))
+    container_refresh()
+
+
+@plugin.route("/clear_search_history")
+def clear_search_history():
+    with SearchHistory() as s:
+        s.clear_entries()
+    notification(translate(30132))
+
+
+@plugin.route("/query/<search_type>")
+@plugin.route("/query/<search_type>/<search_action>")
+def do_query(search_type, search_action=None):
+    search_type = int(search_type)
+    query = get_plugin_query("query")
+    if query is None:
+        query = Dialog().input(translate(30124) + ": " + translate(30125 + search_type))
     if query:
-        if search_type is None:
-            executebuiltin(media(play_search, query))
+        if search_action == "store":
+            with SearchHistory() as s:
+                try:
+                    s.add_entry(search_type, query)
+                except sqlite3.IntegrityError:
+                    s.update_entry(search_type, query, query)
+        elif search_action == "update":
+            with SearchHistory() as s:
+                s.update_entry(search_type, query, query)
+
+        if search_type == 3:
+            executebuiltin(media(play_query, query=query))
+            if search_action == "store" or search_action == "update":
+                container_refresh()
         else:
-            container_update(handle_search, search_type, query)
+            container_update(handle_search, search_type=search_type, query=query)
 
 
-@plugin.route("/search/<search_type>/<query>")
-@plugin.route("/search/<search_type>/<query>/<page>")
+@plugin.route("/search/<search_type>")
+@plugin.route("/search/<search_type>/<page>")
 def handle_search(search_type, **kwargs):
+    search_type = int(search_type)
     kwargs.setdefault("include_adult", include_adult_content())
-    if search_type == "movie":
+    kwargs.setdefault("query", get_plugin_query("query"))
+    if search_type == 0:
         setContent(plugin.handle, MOVIES_TYPE)
         data = tmdb.Search().movie(**kwargs)
         for movie in progress(*tmdb.get_movies(data)):
             add_movie(movie)
-    elif search_type == "show":
+    elif search_type == 1:
         setContent(plugin.handle, SHOWS_TYPE)
         data = tmdb.Search().tv(**kwargs)
         for show in progress(*tmdb.get_shows(data)):
             add_show(show)
-    elif search_type == "person":
+    elif search_type == 2:
         data = tmdb.Search().person(**kwargs)
         for person_li, person_id in tmdb.person_list_items(data):
             add_person(person_li, person_id)
@@ -373,6 +439,15 @@ def play_trailer(media_type, tmdb_id, season_number=None, episode_number=None, l
             episode_number=episode_number,
             language=fallback_language,
             fallback_language=fallback_language)
+
+
+@plugin.route("/providers/play_query")
+def play_query():
+    play_search(get_plugin_query("query"))
+
+
+plugin.add_route(play_movie, "/providers/play_movie/<movie_id>")
+plugin.add_route(play_episode, "/providers/play_episode/<show_id>/<season_number>/<episode_number>")
 
 
 def run():

@@ -12,6 +12,9 @@
         <setting id="providers_timeout" type="slider" label="30006" option="int" range="10,1,60" default="15"/>
         <setting id="resolve_timeout" type="slider" label="30008" option="int" range="30,30,600" default="300"/>
         <setting id="scraper_threads" type="slider" label="30012" option="int" range="1,1,20" default="10"/>
+        <setting id="enable_search_history" type="bool" label="30014" default="false"/>
+        <setting label="30015" type="action" action="RunPlugin(plugin://plugin.video.flix/clear_search_history)"
+                 enable="eq(-1,true)"/>
         <setting id="include_adult_content" type="bool" label="30007" default="false"/>
         <setting label="30005" type="action" action="InstallAddon(plugin.video.youtube)"
                  visible="!System.HasAddon(plugin.video.youtube)"/>
