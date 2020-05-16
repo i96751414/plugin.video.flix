@@ -45,9 +45,13 @@ def action(func, *args, **kwargs):
     return "RunPlugin({})".format(plugin.url_for(func, *args, **kwargs))
 
 
-def get_plugin_query(key):
-    plugin_action = plugin.args.get(key)
-    return None if plugin_action is None else plugin_action[0]
+def get_plugin_query(key, **kwargs):
+    try:
+        return plugin.args[key][0]
+    except KeyError:
+        if "default" in kwargs:
+            return kwargs["default"]
+        raise
 
 
 def handle_page(data, func, *args, **kwargs):
@@ -322,7 +326,7 @@ def clear_search_history():
 @plugin.route("/query/<search_type>/<search_action>")
 def do_query(search_type, search_action=None):
     search_type = int(search_type)
-    query = get_plugin_query("query")
+    query = get_plugin_query("query", default=None)
     if query is None:
         query = Dialog().input(translate(30124) + ": " + translate(30125 + search_type))
     if query:
