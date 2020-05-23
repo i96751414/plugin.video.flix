@@ -84,6 +84,54 @@ else:
         return ADDON.getLocalizedString(*args, **kwargs).encode("utf-8")
 
 
+def get_language_iso_639_1(default="en"):
+    """
+    Get the active language as defined in ISO 639-1.
+
+    :param default: fallback language if unable to get language.
+    :type default: str
+    """
+    language = xbmc.getLanguage(xbmc.ISO_639_1)
+    if not language:
+        name = xbmc.getLanguage(xbmc.ENGLISH_NAME)
+        if name.startswith("Chinese"):
+            language = "zh"
+        elif name.startswith("English"):
+            language = "en"
+        elif name.startswith("French"):
+            language = "fr"
+        elif name.startswith("Hindi"):
+            language = "hi"
+        elif name.startswith("Mongolian"):
+            language = "mn"
+        elif name.startswith("Persian"):
+            language = "fa"
+        elif name.startswith("Portuguese"):
+            language = "pt"
+        elif name.startswith("Serbian"):
+            language = "sr"
+        elif name.startswith("Spanish"):
+            language = "es"
+        elif name.startswith("Tamil"):
+            language = "ta"
+
+    return language or default
+
+
+def convert_language_iso_639_2(name):
+    """
+    Returns the given language converted to the ISO 639-2 format as a string.
+    """
+    if name == "Portuguese (Brazil)":
+        language = "pob"
+    elif name == "Greek":
+        language = "ell"
+    else:
+        language = xbmc.convertLanguage(name, xbmc.ISO_639_2)
+
+    return language
+
+
 def notification(message, heading=ADDON_NAME, icon=ADDON_ICON, time=5000, sound=True):
     """
     Show a Notification alert.

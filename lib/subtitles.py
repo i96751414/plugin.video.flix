@@ -9,7 +9,7 @@ import xbmc
 import xbmcgui
 import xbmcplugin
 
-from lib.api.flix.kodi import ADDON_ID, ADDON_DATA
+from lib.api.flix.kodi import ADDON_ID, ADDON_DATA, get_language_iso_639_1, convert_language_iso_639_2
 from lib.api.flix.utils import unicode_to_str
 from lib.opensubtitles import OpenSubtitles, SearchPayload
 from lib.settings import get_os_username, get_os_password, get_os_folder
@@ -21,45 +21,6 @@ except ImportError:
     from urlparse import parse_qs
     # noinspection PyUnresolvedReferences
     from urllib import urlencode
-
-
-def get_language_iso_639_1():
-    language = xbmc.getLanguage(xbmc.ISO_639_1)
-    if not language:
-        name = xbmc.getLanguage(xbmc.ENGLISH_NAME)
-        if name.startswith("Chinese"):
-            language = "zh"
-        elif name.startswith("English"):
-            language = "en"
-        elif name.startswith("French"):
-            language = "fr"
-        elif name.startswith("Hindi"):
-            language = "hi"
-        elif name.startswith("Mongolian"):
-            language = "mn"
-        elif name.startswith("Persian"):
-            language = "fa"
-        elif name.startswith("Portuguese"):
-            language = "pt"
-        elif name.startswith("Serbian"):
-            language = "sr"
-        elif name.startswith("Spanish"):
-            language = "es"
-        elif name.startswith("Tamil"):
-            language = "ta"
-
-    return language or "en"
-
-
-def convert_language_iso_639_2(name):
-    if name == "Portuguese (Brazil)":
-        language = "pob"
-    elif name == "Greek":
-        language = "ell"
-    else:
-        language = xbmc.convertLanguage(name, xbmc.ISO_639_2)
-
-    return language
 
 
 def get_from_params(params, key, **kwargs):
