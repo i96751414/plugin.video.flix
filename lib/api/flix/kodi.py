@@ -118,6 +118,19 @@ def get_language_iso_639_1(default="en"):
     return language or default
 
 
+def get_language_iso_639_1_region(default="en"):
+    """
+    Get the active language as defined in ISO 639-1, including the region delimited by "-".
+
+    :param default: fallback language if unable to get language.
+    """
+    language = xbmc.getLanguage(xbmc.ISO_639_1, region=True)
+    if not language or language.startswith("-"):
+        lang = get_language_iso_639_1("")
+        language = (lang + language) if lang else default
+    return language
+
+
 def convert_language_iso_639_2(name):
     """
     Returns the given language converted to the ISO 639-2 format as a string.

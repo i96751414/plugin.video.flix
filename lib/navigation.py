@@ -305,7 +305,7 @@ def search_history(search_type, page=1):
                 item,
             )
         handle_page(s.pages_count(), search_history, search_type=search_type, page=page)
-    endOfDirectory(plugin.handle, True)
+    endOfDirectory(plugin.handle)
 
 
 @plugin.route("/search_entry/delete/<search_id>")
