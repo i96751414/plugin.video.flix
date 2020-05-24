@@ -5,8 +5,8 @@
         <setting id="cache_enabled" type="bool" label="30001" default="true"/>
         <setting id="cache_expiration" type="slider" label="30002" option="int" range="1,1,30" default="7"
                  visible="eq(-1,true)"/>
-        <setting id="language" label="30003" type="select" default="en"
-                 values="ar-AE|ar-SA|bg|bn|ca|ch|cs|da|de|el|en|eo|es-ES|es-MX|eu|fa|fi|fr-CA|fr-FR|he|hi|hu|id|it|ja|ka|kn|ko|lt|ml|nb|nl|no|pl|pt-BR|pt-PT|ro|ru|sk|sl|sr|sv|ta|te|th|tr|uk|vi|zh-CN|zh-TW"/>
+        <setting id="language" label="30003" type="select" default="Kodi"
+                 values="Kodi|ar-AE|ar-SA|bg|bn|ca|ch|cs|da|de|el|en|eo|es-ES|es-MX|eu|fa|fi|fr-CA|fr-FR|he|hi|hu|id|it|ja|ka|kn|ko|lt|ml|nb|nl|no|pl|pt-BR|pt-PT|ro|ru|sk|sl|sr|sv|ta|te|th|tr|uk|vi|zh-CN|zh-TW"/>
         <setting id="prefer_original_titles" type="bool" label="30004" default="true"/>
         <setting id="auto_choose_media" type="bool" label="30013" default="false"/>
         <setting id="providers_timeout" type="slider" label="30006" option="int" range="10,1,60" default="30"/>

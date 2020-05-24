@@ -1,4 +1,4 @@
-from lib.api.flix.kodi import get_boolean_setting, get_int_setting, get_setting
+from lib.api.flix.kodi import get_boolean_setting, get_int_setting, get_setting, get_language_iso_639_1
 
 
 def is_cache_enabled():
@@ -18,7 +18,10 @@ def prefer_original_titles():
 
 
 def get_language():
-    return get_setting("language")
+    language = get_setting("language")
+    if language == "Kodi":
+        return get_language_iso_639_1()
+    return language
 
 
 def get_providers_timeout():
