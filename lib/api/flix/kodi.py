@@ -83,51 +83,33 @@ else:
     def translate(*args, **kwargs):
         return ADDON.getLocalizedString(*args, **kwargs).encode("utf-8")
 
+iso_639_1_languages = {
+    "Chinese": "zh", "English": "en", "French": "fr", "Hindi": "hi", "Mongolian": "mn",
+    "Persian": "fa", "Portuguese": "pt", "Serbian": "sr", "Spanish": "es", "Tamil": "ta",
+}
+iso_639_2_languages = {
+    "Portuguese (Brazil)": "pob", "Greek": "ell",
+}
 
-def get_language_iso_639_1(default="en"):
+
+def get_language_iso_639_1(default="en", region=False):
     """
     Get the active language as defined in ISO 639-1.
 
     :param default: fallback language if unable to get language.
+    :param region: append the region delimited by "-" to the language.
     :type default: str
     """
-    language = xbmc.getLanguage(xbmc.ISO_639_1)
-    if not language:
+    language = xbmc.getLanguage(xbmc.ISO_639_1, region=region)
+    if not language or (region and language.startswith("-")):
         name = xbmc.getLanguage(xbmc.ENGLISH_NAME)
-        if name.startswith("Chinese"):
-            language = "zh"
-        elif name.startswith("English"):
-            language = "en"
-        elif name.startswith("French"):
-            language = "fr"
-        elif name.startswith("Hindi"):
-            language = "hi"
-        elif name.startswith("Mongolian"):
-            language = "mn"
-        elif name.startswith("Persian"):
-            language = "fa"
-        elif name.startswith("Portuguese"):
-            language = "pt"
-        elif name.startswith("Serbian"):
-            language = "sr"
-        elif name.startswith("Spanish"):
-            language = "es"
-        elif name.startswith("Tamil"):
-            language = "ta"
+        for k in iso_639_1_languages:
+            if name.startswith(k):
+                language = iso_639_1_languages[k] + language
+                break
+        else:
+            language = default
 
-    return language or default
-
-
-def get_language_iso_639_1_region(default="en"):
-    """
-    Get the active language as defined in ISO 639-1, including the region delimited by "-".
-
-    :param default: fallback language if unable to get language.
-    """
-    language = xbmc.getLanguage(xbmc.ISO_639_1, region=True)
-    if not language or language.startswith("-"):
-        lang = get_language_iso_639_1("")
-        language = (lang + language) if lang else default
     return language
 
 
@@ -135,11 +117,9 @@ def convert_language_iso_639_2(name):
     """
     Returns the given language converted to the ISO 639-2 format as a string.
     """
-    if name == "Portuguese (Brazil)":
-        language = "pob"
-    elif name == "Greek":
-        language = "ell"
-    else:
+    try:
+        language = iso_639_2_languages[name]
+    except KeyError:
         language = xbmc.convertLanguage(name, xbmc.ISO_639_2)
 
     return language
