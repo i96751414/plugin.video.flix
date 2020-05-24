@@ -1,5 +1,6 @@
 flake8
 # sphinx
+futures
 requests
 tmdbsimple
 https://github.com/romanvm/Kodistubs/tarball/master
