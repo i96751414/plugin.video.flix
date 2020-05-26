@@ -19,6 +19,12 @@
         <setting label="30005" type="action" action="InstallAddon(plugin.video.youtube)"
                  visible="!System.HasAddon(plugin.video.youtube)"/>
     </category>
+    <!-- Library -->
+    <category label="30016">
+        <setting id="library_path" type="folder" source="auto" option="writeable" label="30017"/>
+        <setting id="add_unaired_episodes" type="bool" label="30018" default="false"/>
+        <setting id="add_special_episodes" type="bool" label="30019" default="false"/>
+    </category>
     <category label="OpenSubtitles">
         <setting id="os_username" label="30009" type="text" default=""/>
         <setting id="os_password" label="30010" type="text" option="hidden" default=""/>

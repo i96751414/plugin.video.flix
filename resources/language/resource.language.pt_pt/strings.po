@@ -82,6 +82,22 @@ msgctxt "#30015"
 msgid "Clear search history"
 msgstr "Limpar histórico de pesquisas"
 
+msgctxt "#30016"
+msgid "Library"
+msgstr "Biblioteca"
+
+msgctxt "#30017"
+msgid "Library path"
+msgstr "Pasta da biblioteca"
+
+msgctxt "#30018"
+msgid "Add unaired episodes"
+msgstr "Adicionar episódios não emitidos"
+
+msgctxt "#30019"
+msgid "Add special episodes"
+msgstr "Adicionar episódios especiais"
+
 # Navigation
 msgctxt "#30100"
 msgid "Discover"
@@ -214,3 +230,15 @@ msgstr "Apagar entrada"
 msgctxt "#30132"
 msgid "Search history cleared"
 msgstr "Histórico de pesquisas apagado"
+
+msgctxt "#30133"
+msgid "Add to library"
+msgstr "Adicionar à biblioteca"
+
+msgctxt "#30134"
+msgid "Item added to library"
+msgstr "Item adicionado à biblioteca"
+
+msgctxt "#30135"
+msgid "Library path is not valid"
+msgstr "Pasta da biblioteca inválida"

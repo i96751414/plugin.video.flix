@@ -11,8 +11,10 @@ from xbmcplugin import addDirectoryItem, endOfDirectory, setContent, setResolved
 
 from lib import tmdb
 from lib.api.flix.kodi import ADDON_PATH, ADDON_NAME, set_logger, notification, translate, Progress, container_refresh
+from lib.library import Library
 from lib.providers import play_search, play_movie, play_episode
-from lib.settings import get_language, include_adult_content, is_search_history_enabled
+from lib.settings import get_language, include_adult_content, is_search_history_enabled, get_library_path, \
+    add_special_episodes, add_unaired_episodes
 from lib.storage import SearchHistory
 from lib.subtitles import SubtitlesService
 
@@ -71,16 +73,15 @@ def add_person(person_li, person_id):
 
 
 def add_movie(movie):
-    addDirectoryItem(plugin.handle, plugin.url_for(play_movie, movie.movie_id), movie.to_list_item(playable=True))
+    item = movie.to_list_item(playable=True)
+    item.addContextMenuItems([(translate(30133), action(library_add, MOVIES_TYPE, movie.movie_id))])
+    addDirectoryItem(plugin.handle, plugin.url_for(play_movie, movie.movie_id), item)
 
 
 def add_show(show):
-    addDirectoryItem(
-        plugin.handle,
-        plugin.url_for(handle_show, show.show_id),
-        show.to_list_item(),
-        isFolder=True,
-    )
+    item = show.to_list_item()
+    item.addContextMenuItems([(translate(30133), action(library_add, SHOWS_TYPE, show.show_id))])
+    addDirectoryItem(plugin.handle, plugin.url_for(handle_show, show.show_id), item, isFolder=True)
 
 
 def add_season(season):
@@ -269,6 +270,24 @@ def get_shows(call, **kwargs):
         add_show(show)
     handle_page(data, get_shows, call=call, **kwargs)
     endOfDirectory(plugin.handle)
+
+
+@plugin.route("/library/add/<media_type>/<tmdb_id>")
+def library_add(media_type, tmdb_id):
+    try:
+        library = Library(get_library_path(), add_unaired_episodes(), add_special_episodes())
+    except ValueError:
+        logging.error("Invalid library path")
+        notification(translate(30135))
+        return
+    if media_type == MOVIES_TYPE:
+        library.add_movie(tmdb.Movie(tmdb_id))
+    elif media_type == SHOWS_TYPE:
+        library.add_show(tmdb.Show(tmdb_id))
+    else:
+        logging.error("Unknown media type '%s'", media_type)
+        return
+    notification(translate(30134), time=2000, sound=False)
 
 
 @plugin.route("/search")

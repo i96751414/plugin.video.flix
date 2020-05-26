@@ -54,3 +54,15 @@ def get_scraper_thrads():
 
 def auto_choose_media():
     return get_boolean_setting("auto_choose_media")
+
+
+def get_library_path():
+    return get_setting("library_path")
+
+
+def add_unaired_episodes():
+    return get_boolean_setting("add_unaired_episodes")
+
+
+def add_special_episodes():
+    return get_boolean_setting("add_special_episodes")
