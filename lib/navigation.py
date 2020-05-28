@@ -2,6 +2,7 @@ import datetime
 import logging
 import os
 import sqlite3
+from functools import wraps
 
 # noinspection PyPackageRequirements
 from routing import Plugin
@@ -51,13 +52,20 @@ def action(func, *args, **kwargs):
     return "RunPlugin({})".format(plugin.url_for(func, *args, **kwargs))
 
 
-def get_plugin_query(key, **kwargs):
-    try:
-        return plugin.args[key][0]
-    except KeyError:
-        if "default" in kwargs:
-            return kwargs["default"]
-        raise
+def query_arg(name, required=True):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(**kwargs):
+            try:
+                kwargs.setdefault(name, plugin.args[name][0])
+            except KeyError:
+                if required:
+                    raise
+            return func(**kwargs)
+
+        return wrapper
+
+    return decorator
 
 
 def handle_page(data, func, *args, **kwargs):
@@ -154,10 +162,10 @@ def discover_select(media_type):
         # noinspection PyArgumentList
         genres_dict = tmdb.get_genres_by_name(genres_handle(language=get_language()))
         genres_names = sorted(genres_dict.keys())
-        selected_genre = Dialog().select("{} - {}".format(translate(30100), translate(30106)), genres_names)
-        if selected_genre < 0:
+        selected_genres = Dialog().multiselect("{} - {}".format(translate(30100), translate(30106)), genres_names)
+        if selected_genres is None:
             return
-        kwargs["with_genres"] = genres_dict[genres_names[selected_genre]]
+        kwargs["with_genres"] = ",".join(str(genres_dict[genres_names[g]]) for g in selected_genres)
     elif result == 2:
         years = [str(y) for y in range(datetime.datetime.now().year, 1900 - 1, -1)]
         selected_year = Dialog().select("{} - {}".format(translate(30100), translate(30107)), years)
@@ -170,10 +178,8 @@ def discover_select(media_type):
 
 @plugin.route("/discover/movies")
 @plugin.route("/discover/movies/<page>")
-@plugin.route("/discover/movies/by_year/<year>")
-@plugin.route("/discover/movies/by_year/<year>/<page>")
-@plugin.route("/discover/movies/by_genre/<with_genres>")
-@plugin.route("/discover/movies/by_genre/<with_genres>/<page>")
+@query_arg("first_air_date_year", required=False)
+@query_arg("with_genres", required=False)
 def discover_movies(**kwargs):
     setContent(plugin.handle, MOVIES_TYPE)
     kwargs.setdefault("include_adult", include_adult_content())
@@ -186,10 +192,8 @@ def discover_movies(**kwargs):
 
 @plugin.route("/discover/shows")
 @plugin.route("/discover/shows/<page>")
-@plugin.route("/discover/shows/by_year/<first_air_date_year>")
-@plugin.route("/discover/shows/by_year/<first_air_date_year>/<page>")
-@plugin.route("/discover/shows/by_genre/<with_genres>")
-@plugin.route("/discover/shows/by_genre/<with_genres>/<page>")
+@query_arg("first_air_date_year", required=False)
+@query_arg("with_genres", required=False)
 def discover_shows(**kwargs):
     setContent(plugin.handle, SHOWS_TYPE)
     kwargs.setdefault("include_adult", include_adult_content())
@@ -348,9 +352,10 @@ def clear_search_history():
 
 @plugin.route("/query/<search_type>")
 @plugin.route("/query/<search_type>/<search_action>")
-def do_query(search_type, search_action=None):
+@query_arg("query", required=False)
+def do_query(search_type, query=None, search_action=None):
     search_type = int(search_type)
-    old_query = query = get_plugin_query("query", default=None)
+    old_query = query
     if query is None:
         query = Dialog().input(translate(30124) + ": " + translate(30125 + search_type))
     elif search_action == SEARCH_EDIT:
@@ -386,10 +391,10 @@ def do_query(search_type, search_action=None):
 
 @plugin.route("/search/<search_type>")
 @plugin.route("/search/<search_type>/<page>")
+@query_arg("query")
 def handle_search(search_type, **kwargs):
     search_type = int(search_type)
     kwargs.setdefault("include_adult", include_adult_content())
-    kwargs.setdefault("query", get_plugin_query("query"))
     if search_type == 0:
         setContent(plugin.handle, MOVIES_TYPE)
         data = tmdb.Search().movie(**kwargs)
@@ -482,8 +487,9 @@ def play_trailer(media_type, tmdb_id, season_number=None, episode_number=None, l
 
 
 @plugin.route("/providers/play_query")
-def play_query():
-    play_search(get_plugin_query("query"))
+@query_arg("query")
+def play_query(query):
+    play_search(query)
 
 
 plugin.add_route(play_movie, "/providers/play_movie/<movie_id>")
