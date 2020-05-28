@@ -242,3 +242,7 @@ msgstr ""
 msgctxt "#30135"
 msgid "Library path is not valid"
 msgstr ""
+
+msgctxt "#30136"
+msgid "Edit entry"
+msgstr ""

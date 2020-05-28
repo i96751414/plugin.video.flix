@@ -22,6 +22,10 @@ MOVIES_TYPE = "movies"
 SHOWS_TYPE = "tvshows"
 EPISODES_TYPE = "episodes"
 
+SEARCH_STORE = "store"
+SEARCH_UPDATE = "update"
+SEARCH_EDIT = "edit"
+
 plugin = Plugin()
 
 
@@ -310,17 +314,18 @@ def search_history(search_type, page=1):
     with SearchHistory() as s:
         addDirectoryItem(
             plugin.handle,
-            plugin.url_for(do_query, search_type=search_type, search_action="store"),
+            plugin.url_for(do_query, search_type=search_type, search_action=SEARCH_STORE),
             li(30130, "new_search.png"),
         )
-        for (search_id, query,) in s.get_page(search_type, page):
+        for search_id, query in s.get_page(search_type, page):
             item = list_item(query, "search.png")
             item.addContextMenuItems([
                 (translate(30131), action(delete_search_entry, search_id)),
+                (translate(30136), action(do_query, search_type=search_type, search_action=SEARCH_EDIT, query=query)),
             ])
             addDirectoryItem(
                 plugin.handle,
-                plugin.url_for(do_query, search_type=search_type, search_action="update", query=query),
+                plugin.url_for(do_query, search_type=search_type, search_action=SEARCH_UPDATE, query=query),
                 item,
             )
         handle_page(s.pages_count(), search_history, search_type=search_type, page=page)
@@ -345,23 +350,35 @@ def clear_search_history():
 @plugin.route("/query/<search_type>/<search_action>")
 def do_query(search_type, search_action=None):
     search_type = int(search_type)
-    query = get_plugin_query("query", default=None)
+    old_query = query = get_plugin_query("query", default=None)
     if query is None:
         query = Dialog().input(translate(30124) + ": " + translate(30125 + search_type))
+    elif search_action == SEARCH_EDIT:
+        query = Dialog().input(translate(30124) + ": " + translate(30125 + search_type), defaultt=old_query)
     if query:
-        if search_action == "store":
+        if search_action == SEARCH_STORE:
             with SearchHistory() as s:
                 try:
                     s.add_entry(search_type, query)
                 except sqlite3.IntegrityError:
+                    # In case the query already exists, just update the timestamp
                     s.update_entry(search_type, query, query)
-        elif search_action == "update":
+        elif search_action == SEARCH_UPDATE:
             with SearchHistory() as s:
                 s.update_entry(search_type, query, query)
+        elif search_action == SEARCH_EDIT:
+            if old_query is None:
+                return
+            with SearchHistory() as s:
+                try:
+                    s.update_entry(search_type, old_query, query)
+                except sqlite3.IntegrityError:
+                    # In case the new query already exists, ignore
+                    pass
 
         if search_type == 3:
             executebuiltin(media(play_query, query=query))
-            if search_action == "store" or search_action == "update":
+            if search_action in (SEARCH_STORE, SEARCH_UPDATE, SEARCH_EDIT):
                 container_refresh()
         else:
             container_update(handle_search, search_type=search_type, query=query)
