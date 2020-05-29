@@ -98,6 +98,10 @@ msgctxt "#30019"
 msgid "Add special episodes"
 msgstr "Adicionar episódios especiais"
 
+msgctxt "#30020"
+msgid "Update library after insertion"
+msgstr "Atualizar biblioteca após inserção"
+
 # Navigation
 msgctxt "#30100"
 msgid "Discover"

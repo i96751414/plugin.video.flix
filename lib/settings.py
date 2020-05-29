@@ -66,3 +66,7 @@ def add_unaired_episodes():
 
 def add_special_episodes():
     return get_boolean_setting("add_special_episodes")
+
+
+def update_library():
+    return get_boolean_setting("update_library")

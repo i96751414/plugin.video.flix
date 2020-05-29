@@ -2,20 +2,21 @@ import os
 import time
 from datetime import datetime
 
-from xbmc import makeLegalFilename
+from xbmc import makeLegalFilename, executebuiltin
 
 from lib.api.flix.kodi import ADDON_ID
 from lib.tmdb import Season
 
 
 class Library(object):
-    def __init__(self, directory, add_unaired_episodes=False, add_specials=False):
+    def __init__(self, directory, add_unaired_episodes=False, add_specials=False, update_library=False):
         if not os.path.isdir(directory):
             raise ValueError("Library directory does not exist")
 
         self._directory = directory
         self._add_unaired_episodes = add_unaired_episodes
         self._add_specials = add_specials
+        self._update_library = update_library
         self._movies_directory = os.path.join(self._directory, "Movies")
         self._shows_directory = os.path.join(self._directory, "TV Shows")
 
@@ -36,6 +37,9 @@ class Library(object):
 
         with open(makeLegalFilename(os.path.join(movie_path, name + ".strm")), "w") as f:
             f.write("plugin://{}/providers/play_movie/{}".format(ADDON_ID, item.movie_id))
+
+        if self._update_library:
+            self.update_movies()
 
     def add_show(self, item):
         show_title = item.get_info("originaltitle")
@@ -66,3 +70,23 @@ class Library(object):
                 with open(makeLegalFilename(os.path.join(show_path, name + ".strm")), "w") as f:
                     f.write("plugin://{}/providers/play_episode/{}/{}/{}".format(
                         ADDON_ID, episode.show_id, episode.season_number, episode.episode_number))
+
+        if self._update_library:
+            self.update_shows()
+
+    @staticmethod
+    def update_library(path=None):
+        args = ["video"]
+        if path:
+            args.append(path)
+        executebuiltin("UpdateLibrary(" + ",".join(args) + ")")
+
+    def update_shows(self):
+        self.update_library(self._shows_directory)
+
+    def update_movies(self):
+        self.update_library(self._movies_directory)
+
+    @staticmethod
+    def clean_library():
+        executebuiltin("CleanLibrary(video)")

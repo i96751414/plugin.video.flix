@@ -15,7 +15,7 @@ from lib.api.flix.kodi import ADDON_PATH, ADDON_NAME, set_logger, notification, 
 from lib.library import Library
 from lib.providers import play_search, play_movie, play_episode
 from lib.settings import get_language, include_adult_content, is_search_history_enabled, get_library_path, \
-    add_special_episodes, add_unaired_episodes
+    add_special_episodes, add_unaired_episodes, update_library
 from lib.storage import SearchHistory
 from lib.subtitles import SubtitlesService
 
@@ -283,7 +283,7 @@ def get_shows(call, **kwargs):
 @plugin.route("/library/add/<media_type>/<tmdb_id>")
 def library_add(media_type, tmdb_id):
     try:
-        library = Library(get_library_path(), add_unaired_episodes(), add_special_episodes())
+        library = Library(get_library_path(), add_unaired_episodes(), add_special_episodes(), update_library())
     except ValueError:
         logging.error("Invalid library path")
         notification(translate(30135))
