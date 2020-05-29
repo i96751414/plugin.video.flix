@@ -46,6 +46,11 @@ class Storage(object):
                 break
             yield rows
 
+    def get_all_iter_items(self, table_name, size):
+        for rows in self.get_all_iter(table_name, size):
+            for row in rows:
+                yield row
+
     def close(self):
         self.cursor.close()
         self.conn.close()

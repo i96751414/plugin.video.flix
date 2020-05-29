@@ -14,8 +14,7 @@ from lib import tmdb
 from lib.api.flix.kodi import ADDON_PATH, ADDON_NAME, set_logger, notification, translate, Progress, container_refresh
 from lib.library import Library
 from lib.providers import play_search, play_movie, play_episode
-from lib.settings import get_language, include_adult_content, is_search_history_enabled, get_library_path, \
-    add_special_episodes, add_unaired_episodes, update_library
+from lib.settings import get_language, include_adult_content, is_search_history_enabled
 from lib.storage import SearchHistory
 from lib.subtitles import SubtitlesService
 
@@ -282,20 +281,22 @@ def get_shows(call, **kwargs):
 
 @plugin.route("/library/add/<media_type>/<tmdb_id>")
 def library_add(media_type, tmdb_id):
-    try:
-        library = Library(get_library_path(), add_unaired_episodes(), add_special_episodes(), update_library())
-    except ValueError:
-        logging.error("Invalid library path")
-        notification(translate(30135))
-        return
-    if media_type == MOVIES_TYPE:
-        library.add_movie(tmdb.Movie(tmdb_id))
-    elif media_type == SHOWS_TYPE:
-        library.add_show(tmdb.Show(tmdb_id))
-    else:
-        logging.error("Unknown media type '%s'", media_type)
-        return
-    notification(translate(30134), time=2000, sound=False)
+    with Library() as library:
+        if media_type == MOVIES_TYPE:
+            added = library.add_movie(tmdb.Movie(tmdb_id))
+        elif media_type == SHOWS_TYPE:
+            added = library.add_show(tmdb.Show(tmdb_id))
+        else:
+            logging.error("Unknown media type '%s'", media_type)
+            return
+        notification(translate(30134 if added else 30137), time=2000, sound=False)
+
+
+@plugin.route("/library/rebuild")
+def library_rebuild():
+    with Library() as library:
+        library.rebuild()
+        notification(translate(30138))
 
 
 @plugin.route("/search")

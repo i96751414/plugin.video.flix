@@ -27,10 +27,12 @@ Module `utils` provides some compatibility utilities for both Python 2 and 3.
 
 """
 
+import re
 import sys
 from concurrent.futures import ThreadPoolExecutor
 
 PY3 = sys.version_info.major >= 3
+RESERVED_PATH_CHARS_RE = re.compile(r'[<>:"/\\|?*%+]')
 
 if PY3:
     string_types = str
@@ -83,3 +85,13 @@ def get_data(func, iterable, threads=5, **kwargs):
                     raise e
                 if yield_exceptions:
                     yield e
+
+
+def make_legal_name(name):
+    """
+    Create a legal file name from the passed string.
+
+    :param name: The name to make legal.
+    :return: The legal file name.
+    """
+    return RESERVED_PATH_CHARS_RE.sub("", name)

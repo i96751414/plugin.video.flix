@@ -25,6 +25,7 @@
         <setting id="add_unaired_episodes" type="bool" label="30018" default="false"/>
         <setting id="add_special_episodes" type="bool" label="30019" default="false"/>
         <setting id="update_library" type="bool" label="30020" default="false"/>
+        <setting label="30021" type="action" action="RunPlugin(plugin://plugin.video.flix/library/rebuild)"/>
     </category>
     <category label="OpenSubtitles">
         <setting id="os_username" label="30009" type="text" default=""/>

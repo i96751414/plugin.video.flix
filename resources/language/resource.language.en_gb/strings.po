@@ -102,6 +102,10 @@ msgctxt "#30020"
 msgid "Update library after insertion"
 msgstr ""
 
+msgctxt "#30021"
+msgid "Rebuild library"
+msgstr ""
+
 # Navigation
 msgctxt "#30100"
 msgid "Discover"
@@ -249,4 +253,12 @@ msgstr ""
 
 msgctxt "#30136"
 msgid "Edit entry"
+msgstr ""
+
+msgctxt "#30137"
+msgid "Item previously added to library"
+msgstr ""
+
+msgctxt "#30138"
+msgid "Library rebuilt"
 msgstr ""

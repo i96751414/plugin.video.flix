@@ -102,6 +102,10 @@ msgctxt "#30020"
 msgid "Update library after insertion"
 msgstr "Atualizar biblioteca após inserção"
 
+msgctxt "#30021"
+msgid "Rebuild library"
+msgstr "Re-construir biblioteca"
+
 # Navigation
 msgctxt "#30100"
 msgid "Discover"
@@ -250,3 +254,11 @@ msgstr "Pasta da biblioteca inválida"
 msgctxt "#30136"
 msgid "Edit entry"
 msgstr "Editar entrada"
+
+msgctxt "#30137"
+msgid "Item previously added to library"
+msgstr "Item adicionado anteriormente"
+
+msgctxt "#30138"
+msgid "Library rebuilt"
+msgstr "Biblioteca re-construida"
