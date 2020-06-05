@@ -10,17 +10,14 @@ class Storage(object):
         self.cursor = self.conn.cursor()
 
     def execute_and_commit(self, *args, **kwargs):
-        self.cursor.execute(*args, **kwargs)
-        self.conn.commit()
+        self.execute(*args, **kwargs)
+        self.commit()
 
     def execute(self, *args, **kwargs):
         return self.cursor.execute(*args, **kwargs)
 
     def commit(self):
         self.conn.commit()
-
-    def select_all(self, table_name):
-        return self.cursor.execute("SELECT * FROM `{}`".format(table_name))
 
     def select_page(self, query, size, page_number, *args, **kwargs):
         return self.cursor.execute(query + " LIMIT {:d} OFFSET {:d}".format(size, size * (page_number - 1)),
@@ -35,19 +32,17 @@ class Storage(object):
     def count(self, table_name):
         return self.cursor.execute("SELECT COUNT(*) FROM `{}`".format(table_name)).fetchone()[0]
 
-    def get_all(self, table_name):
-        return self.select_all(table_name).fetchall()
-
-    def get_all_iter(self, table_name, size):
-        result = self.select_all(table_name)
+    def fetch_batches(self, size, *args, **kwargs):
+        result = self.execute(*args, **kwargs)
         while True:
             rows = result.fetchmany(size)
             if not rows:
                 break
             yield rows
 
-    def get_all_iter_items(self, table_name, size):
-        for rows in self.get_all_iter(table_name, size):
+    def fetch_items(self, *args, **kwargs):
+        batch_size = kwargs.pop("batch_size", 20)
+        for rows in self.fetch_batches(batch_size, *args, **kwargs):
             for row in rows:
                 yield row
 

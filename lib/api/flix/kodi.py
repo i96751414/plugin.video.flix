@@ -64,7 +64,7 @@ import xbmc
 import xbmcaddon
 import xbmcgui
 
-from .utils import str_to_unicode, PY3
+from .utils import str_to_unicode, unicode_to_str, PY3
 
 ADDON = xbmcaddon.Addon()
 ADDON_NAME = ADDON.getAddonInfo("name")
@@ -185,10 +185,24 @@ def set_boolean_setting(setting, value):
 
     :param setting: The setting id.
     :type setting: str
-    :param value: The setting value:
+    :param value: The setting value.
     :type value: bool
     """
     set_setting(setting, "true" if value else "false")
+
+
+def set_any_setting(setting, value):
+    """
+    Set a setting.
+
+    :param setting: The setting id.
+    :type setting: str
+    :param value: The setting value.
+    """
+    if isinstance(value, bool):
+        set_boolean_setting(setting, value)
+    else:
+        set_setting(setting, str(value))
 
 
 def execute_json_rpc(method, rpc_version="2.0", rpc_id=1, **params):
@@ -337,7 +351,7 @@ class KodiLogHandler(logging.StreamHandler):
         self.setFormatter(logging.Formatter("[{}] %(message)s".format(ADDON_ID)))
 
     def emit(self, record):
-        xbmc.log(self.format(record), self.levels[record.levelno])
+        xbmc.log(unicode_to_str(self.format(record)), self.levels[record.levelno])
 
     def flush(self):
         pass

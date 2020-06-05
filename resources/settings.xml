@@ -4,7 +4,7 @@
     <category label="30000">
         <setting id="cache_enabled" type="bool" label="30001" default="true"/>
         <setting id="cache_expiration" type="slider" label="30002" option="int" range="1,1,30" default="7"
-                 visible="eq(-1,true)"/>
+                 enable="eq(-1,true)" subsetting="true"/>
         <setting id="language" label="30003" type="select" default="Kodi"
                  values="Kodi|ar-AE|ar-SA|bg|bn|ca|ch|cs|da|de|el|en|eo|es-ES|es-MX|eu|fa|fi|fr-CA|fr-FR|he|hi|hu|id|it|ja|ka|kn|ko|lt|ml|nb|nl|no|pl|pt-BR|pt-PT|ro|ru|sk|sl|sr|sv|ta|te|th|tr|uk|vi|zh-CN|zh-TW"/>
         <setting id="prefer_original_titles" type="bool" label="30004" default="true"/>
@@ -14,7 +14,7 @@
         <setting id="scraper_threads" type="slider" label="30012" option="int" range="1,1,20" default="10"/>
         <setting id="enable_search_history" type="bool" label="30014" default="false"/>
         <setting label="30015" type="action" action="RunPlugin(plugin://plugin.video.flix/clear_search_history)"
-                 enable="eq(-1,true)"/>
+                 enable="eq(-1,true)" subsetting="true"/>
         <setting id="include_adult_content" type="bool" label="30007" default="false"/>
         <setting label="30005" type="action" action="InstallAddon(plugin.video.youtube)"
                  visible="!System.HasAddon(plugin.video.youtube)"/>
@@ -24,7 +24,17 @@
         <setting id="library_path" type="folder" source="auto" option="writeable" label="30017"/>
         <setting id="add_unaired_episodes" type="bool" label="30018" default="false"/>
         <setting id="add_special_episodes" type="bool" label="30019" default="false"/>
-        <setting id="update_library" type="bool" label="30020" default="false"/>
+        <setting id="update_kodi_library" type="bool" label="30020" default="false"/>
+        <setting id="library_auto_update" type="bool" label="30022" default="false"/>
+        <setting id="library_auto_update_rate" type="slider" label="30025" option="int" range="1,1,30" default="1"
+                 enable="eq(-1,true)" subsetting="true"/>
+        <setting id="library_auto_update_last" type="number" default="0" visible="false"/>
+        <setting id="library_auto_add" type="bool" label="30023" default="false"/>
+        <setting id="library_auto_add_rate" type="slider" label="30025" option="int" range="1,1,30" default="1"
+                 enable="eq(-1,true)" subsetting="true"/>
+        <setting id="library_auto_add_pages" type="slider" label="30025" option="int" range="1,1,60" default="5"
+                 enable="eq(-2,true)" subsetting="true"/>
+        <setting id="library_auto_add_last" type="number" default="0" visible="false"/>
         <setting label="30021" type="action" action="RunPlugin(plugin://plugin.video.flix/library/rebuild)"/>
     </category>
     <category label="OpenSubtitles">

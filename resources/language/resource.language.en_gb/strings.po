@@ -99,11 +99,27 @@ msgid "Add special episodes"
 msgstr ""
 
 msgctxt "#30020"
-msgid "Update library after insertion"
+msgid "Update Kodi library after insertion"
 msgstr ""
 
 msgctxt "#30021"
 msgid "Rebuild library"
+msgstr ""
+
+msgctxt "#30022"
+msgid "Automatically update library content"
+msgstr ""
+
+msgctxt "#30023"
+msgid "Automatically add new content to library"
+msgstr ""
+
+msgctxt "#30024"
+msgid "Number of pages to add"
+msgstr ""
+
+msgctxt "#30025"
+msgid "Refresh rate (days)"
 msgstr ""
 
 # Navigation

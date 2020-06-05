@@ -1,4 +1,4 @@
-from lib.api.flix.kodi import get_boolean_setting, get_int_setting, get_setting, get_language_iso_639_1
+from lib.api.flix.kodi import get_boolean_setting, get_int_setting, get_setting, get_language_iso_639_1, set_any_setting
 
 
 def is_cache_enabled():
@@ -68,5 +68,41 @@ def add_special_episodes():
     return get_boolean_setting("add_special_episodes")
 
 
-def update_library():
-    return get_boolean_setting("update_library")
+def update_kodi_library():
+    return get_boolean_setting("update_kodi_library")
+
+
+def library_auto_update():
+    return get_boolean_setting("library_auto_update")
+
+
+def get_library_auto_update_rate():
+    return get_int_setting("library_auto_update_rate") * 86400
+
+
+def get_library_auto_update_last():
+    return get_int_setting("library_auto_update_last")
+
+
+def set_library_auto_update_last(value):
+    set_any_setting("library_auto_update_last", value)
+
+
+def library_auto_add():
+    return get_boolean_setting("library_auto_add")
+
+
+def get_library_auto_add_rate():
+    return get_int_setting("library_auto_add_rate") * 86400
+
+
+def library_auto_add_pages():
+    return get_int_setting("library_auto_add_pages")
+
+
+def get_library_auto_add_last():
+    return get_int_setting("library_auto_add_last")
+
+
+def set_library_auto_add_last(value):
+    set_any_setting("library_auto_add_last", value)

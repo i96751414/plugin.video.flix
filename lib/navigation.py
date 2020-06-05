@@ -170,14 +170,14 @@ def discover_select(media_type):
         selected_year = Dialog().select("{} - {}".format(translate(30100), translate(30107)), years)
         if selected_year < 0:
             return
-        kwargs["year" if media_type == MOVIES_TYPE else "first_air_date_year"] = years[selected_year]
+        kwargs["primary_release_year" if media_type == MOVIES_TYPE else "first_air_date_year"] = years[selected_year]
 
     container_update(handler, **kwargs)
 
 
 @plugin.route("/discover/movies")
 @plugin.route("/discover/movies/<page>")
-@query_arg("first_air_date_year", required=False)
+@query_arg("primary_release_year", required=False)
 @query_arg("with_genres", required=False)
 def discover_movies(**kwargs):
     setContent(plugin.handle, MOVIES_TYPE)
