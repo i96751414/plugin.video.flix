@@ -2,8 +2,9 @@ import logging
 import os
 import time
 from datetime import datetime
+from threading import Lock
 
-from xbmc import executebuiltin
+from xbmc import executebuiltin, Monitor
 
 from lib.api.flix.kodi import ADDON_ID, translate
 from lib.api.flix.utils import make_legal_name
@@ -11,6 +12,71 @@ from lib.settings import get_library_path, add_special_episodes, add_unaired_epi
     include_adult_content
 from lib.storage import Storage
 from lib.tmdb import Season, Movie, Show, Discover, get_movies, get_shows
+
+
+class LibraryMonitor(Monitor):
+    def __init__(self, library="video"):
+        super(LibraryMonitor, self).__init__()
+        self._library = library
+        self._lock = Lock()
+        self._scan_started = self._scan_finished = False
+        self._clean_started = self._clean_finished = False
+
+    def onScanStarted(self, library):
+        self._on_action("_scan_started", library)
+
+    def onScanFinished(self, library):
+        self._on_action("_scan_finished", library)
+
+    def onCleanStarted(self, library):
+        self._on_action("_clean_started", library)
+
+    def onCleanFinished(self, library):
+        self._on_action("_clean_finished", library)
+
+    def _on_action(self, attr, library):
+        if library == self._library:
+            with self._lock:
+                setattr(self, attr, True)
+                logging.debug("%s on %s library", library)
+
+    def wait_scan_start(self, timeout=0):
+        return self._wait("_scan_started", timeout)
+
+    def wait_scan_finish(self, timeout=0):
+        return self._wait("_scan_finished", timeout)
+
+    def wait_clean_start(self, timeout=0):
+        return self._wait("_clean_started", timeout)
+
+    def wait_clean_finish(self, timeout=0):
+        return self._wait("_clean_finished", timeout)
+
+    def _wait(self, attr, timeout):
+        start_time = time.time()
+        while not getattr(self, attr) and not self.waitForAbort(1):
+            if 0 < timeout < time.time() - start_time:
+                return False
+        return True
+
+    def start_scan(self, path=None, wait=False):
+        with self._lock:
+            self._scan_started = self._scan_finished = False
+            args = [self._library]
+            if path:
+                args.append(path)
+            executebuiltin("UpdateLibrary(" + ",".join(args) + ")")
+        if wait:
+            if self.wait_scan_start(10):
+                self.wait_scan_finish()
+
+    def clean_library(self, wait=False):
+        with self._lock:
+            self._clean_started = self._clean_finished = False
+            executebuiltin("CleanLibrary(" + self._library + ")")
+        if wait:
+            if self.wait_clean_start(10):
+                self.wait_clean_finish()
 
 
 class Library(object):
@@ -76,7 +142,7 @@ class Library(object):
 
     def add_movie(self, item):
         if self._storage_has_item(item.movie_id, self.MOVIE_TYPE):
-            logging.warning("Movie %s was previously added", item.movie_id)
+            logging.debug("Movie %s was previously added", item.movie_id)
             return False
 
         name = item.get_info("originaltitle")
@@ -120,7 +186,7 @@ class Library(object):
 
     def add_show(self, item):
         if self._storage_has_item(item.show_id, self.SHOW_TYPE):
-            logging.warning("Show %s was previously added", item.show_id)
+            logging.debug("Show %s was previously added", item.show_id)
             return False
 
         name = item.get_info("originaltitle")
@@ -146,15 +212,15 @@ class Library(object):
                 logging.error("Unknown item type '%s' for id '%' and path '%s'", item_type, item_id, path)
 
         if self._update_kodi_library:
-            self.update_movies()
-            self.update_shows()
+            self.update_movies(wait=True)
+            self.update_shows(wait=True)
 
     def update_library(self):
         for item_id, path in self._storage_get_entries_by_type(self.SHOW_TYPE):
             logging.debug("Updating show %s on %s", item_id, path)
             self._add_show(Show(item_id), path, override_if_exists=False)
         if self._update_kodi_library:
-            self.update_shows()
+            self.update_shows(wait=True)
 
     def discover_contents(self, pages):
         include_adult = include_adult_content()
@@ -167,25 +233,14 @@ class Library(object):
                 logging.debug("Adding show %s to library", show.show_id)
                 self.add_show(show)
         if self._update_kodi_library:
-            self.update_movies()
-            self.update_shows()
+            self.update_movies(wait=True)
+            self.update_shows(wait=True)
 
-    @staticmethod
-    def update_kodi_library(path=None):
-        args = ["video"]
-        if path:
-            args.append(path)
-        executebuiltin("UpdateLibrary(" + ",".join(args) + ")")
+    def update_shows(self, wait=False):
+        LibraryMonitor().start_scan(self._shows_directory, wait)
 
-    def update_shows(self):
-        self.update_kodi_library(self._shows_directory)
-
-    def update_movies(self):
-        self.update_kodi_library(self._movies_directory)
-
-    @staticmethod
-    def clean_kodi_library():
-        executebuiltin("CleanLibrary(video)")
+    def update_movies(self, wait=False):
+        LibraryMonitor().start_scan(self._movies_directory, wait)
 
     def close(self):
         self._storage.close()
