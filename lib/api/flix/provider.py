@@ -148,7 +148,7 @@ class Provider(object):
         """
         raise NotImplementedError("'search_movie' method must be implemented")
 
-    def search_show(self, tmdb_id, show_title, titles):
+    def search_show(self, tmdb_id, show_title, titles, year=None):
         """
         Search a tv show.
 
@@ -158,6 +158,8 @@ class Provider(object):
         :type show_title: str
         :param titles: Dictionary containing key-pairs of country and title, respectively.
         :type titles: dict[str, str]
+        :param year: The show first air year. This is optional, as some shows don't have this attribute.
+        :type year: int, optional
         :return: List of search results.
         :rtype: list[ProviderResult]
         """

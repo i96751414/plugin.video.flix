@@ -116,42 +116,23 @@ def play_search(query):
 
 def play_movie(movie_id):
     item = Movie(movie_id)
-    year = item.get_info("year")
-    year = int(year) if year else None
-    play(item, "search_movie", movie_id, item.get_info("originaltitle"), item.alternative_titles, year=year)
-
-
-def play_season(show_id, season_number):
-    show = Show(show_id)
-    play(
-        Season(show_id, season_number),
-        "search_season",
-        show_id,
-        show.get_info("originaltitle"),
-        int(season_number),
-        show.alternative_titles,
-    )
+    play(item, "search_movie", movie_id, item.get_info("originaltitle"), item.alternative_titles,
+         year=item.get_info_as("year", int))
 
 
 def play_show(show_id):
     show = Show(show_id)
-    play(
-        show,
-        "search_show",
-        show_id,
-        show.get_info("originaltitle"),
-        show.alternative_titles,
-    )
+    play(show, "search_show", show_id, show.get_info("originaltitle"), show.alternative_titles,
+         year=show.get_info_as("year", int))
+
+
+def play_season(show_id, season_number):
+    show = Show(show_id)
+    play(Season(show_id, season_number), "search_season", show_id, show.get_info("originaltitle"), int(season_number),
+         show.alternative_titles)
 
 
 def play_episode(show_id, season_number, episode_number):
     show = Show(show_id)
-    play(
-        Season(show_id, season_number).get_episode(episode_number),
-        "search_episode",
-        show_id,
-        show.get_info("originaltitle"),
-        int(season_number),
-        int(episode_number),
-        show.alternative_titles,
-    )
+    play(Season(show_id, season_number).get_episode(episode_number), "search_episode", show_id,
+         show.get_info("originaltitle"), int(season_number), int(episode_number), show.alternative_titles)

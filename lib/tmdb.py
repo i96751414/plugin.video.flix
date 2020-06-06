@@ -226,6 +226,10 @@ class VideoItem(object):
     def get_info(self, key):
         return self._info[key]
 
+    def get_info_as(self, key, clazz, default=None):
+        value = self.get_info(key)
+        return clazz(value) if value else default
+
     def get_art(self, key):
         return self._art[key]
 
