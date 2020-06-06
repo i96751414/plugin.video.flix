@@ -17,13 +17,13 @@ Module `utils` provides some compatibility utilities for both Python 2 and 3.
 
     Convert bytes to string. This is a noop for Python 2.
 
-.. function:: str_to_unicode(s)
+.. function:: assure_unicode(s)
 
-    Convert string to unicode. This is a noop for Python 3.
+    Convert string to unicode if necessary. This is a noop for Python 3.
 
-.. function:: unicode_to_str(s)
+.. function:: assure_str(s)
 
-    Convert unicode to string. This is a noop for Python 3.
+    Convert unicode to string if necessary. This is a noop for Python 3.
 
 """
 
@@ -43,10 +43,10 @@ if PY3:
     def bytes_to_str(b):
         return b.decode()
 
-    def str_to_unicode(s):
+    def assure_unicode(s):
         return s
 
-    def unicode_to_str(s):
+    def assure_str(s):
         return s
 
 else:
@@ -59,11 +59,17 @@ else:
     def bytes_to_str(b):
         return b
 
-    def str_to_unicode(s):
-        return s.decode("utf-8")
+    def assure_unicode(s):
+        if isinstance(s, str):
+            # noinspection PyUnresolvedReferences
+            s = s.decode("utf-8")
+        return s
 
-    def unicode_to_str(s):
-        return s.encode("utf-8")
+    def assure_str(s):
+        # noinspection PyUnresolvedReferences
+        if isinstance(s, unicode):
+            s = s.encode("utf-8")
+        return s
 
 
 def get_data(func, iterable, threads=5, **kwargs):

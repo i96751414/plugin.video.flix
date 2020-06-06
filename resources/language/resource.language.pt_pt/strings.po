@@ -278,3 +278,7 @@ msgstr "Item adicionado anteriormente"
 msgctxt "#30138"
 msgid "Library rebuilt"
 msgstr "Biblioteca re-construida"
+
+msgctxt "#30139"
+msgid "Play"
+msgstr "Reproduzir"

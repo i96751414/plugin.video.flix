@@ -278,3 +278,7 @@ msgstr ""
 msgctxt "#30138"
 msgid "Library rebuilt"
 msgstr ""
+
+msgctxt "#30139"
+msgid "Play"
+msgstr ""

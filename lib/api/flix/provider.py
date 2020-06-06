@@ -148,6 +148,38 @@ class Provider(object):
         """
         raise NotImplementedError("'search_movie' method must be implemented")
 
+    def search_show(self, tmdb_id, show_title, titles):
+        """
+        Search a tv show.
+
+        :param tmdb_id: The tv show TMDB id.
+        :type tmdb_id: str
+        :param show_title: The show title.
+        :type show_title: str
+        :param titles: Dictionary containing key-pairs of country and title, respectively.
+        :type titles: dict[str, str]
+        :return: List of search results.
+        :rtype: list[ProviderResult]
+        """
+        raise NotImplementedError("'search_show' method must be implemented")
+
+    def search_season(self, tmdb_id, show_title, season_number, titles):
+        """
+        Search a season.
+
+        :param tmdb_id: The tv show TMDB id.
+        :type tmdb_id: str
+        :param show_title: The show title.
+        :type show_title: str
+        :param season_number: The season number.
+        :type season_number: int
+        :param titles: Dictionary containing key-pairs of country and title, respectively.
+        :type titles: dict[str, str]
+        :return: List of search results.
+        :rtype: list[ProviderResult]
+        """
+        raise NotImplementedError("'search_season' method must be implemented")
+
     def search_episode(self, tmdb_id, show_title, season_number, episode_number, titles):
         """
         Search an episode.

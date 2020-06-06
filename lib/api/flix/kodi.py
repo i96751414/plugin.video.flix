@@ -64,14 +64,14 @@ import xbmc
 import xbmcaddon
 import xbmcgui
 
-from .utils import str_to_unicode, unicode_to_str, PY3
+from .utils import assure_unicode, assure_str, PY3
 
 ADDON = xbmcaddon.Addon()
 ADDON_NAME = ADDON.getAddonInfo("name")
 ADDON_ID = ADDON.getAddonInfo("id")
-ADDON_PATH = str_to_unicode(ADDON.getAddonInfo("path"))
-ADDON_ICON = str_to_unicode(ADDON.getAddonInfo("icon"))
-ADDON_DATA = str_to_unicode(xbmc.translatePath(ADDON.getAddonInfo("profile")))
+ADDON_PATH = assure_unicode(ADDON.getAddonInfo("path"))
+ADDON_ICON = assure_unicode(ADDON.getAddonInfo("icon"))
+ADDON_DATA = assure_unicode(xbmc.translatePath(ADDON.getAddonInfo("profile")))
 
 set_setting = ADDON.setSetting
 get_setting = ADDON.getSetting
@@ -351,7 +351,7 @@ class KodiLogHandler(logging.StreamHandler):
         self.setFormatter(logging.Formatter("[{}] %(message)s".format(ADDON_ID)))
 
     def emit(self, record):
-        xbmc.log(unicode_to_str(self.format(record)), self.levels[record.levelno])
+        xbmc.log(assure_str(self.format(record)), self.levels[record.levelno])
 
     def flush(self):
         pass

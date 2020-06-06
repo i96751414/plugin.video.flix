@@ -13,7 +13,7 @@ from xbmcplugin import addDirectoryItem, endOfDirectory, setContent, setResolved
 from lib import tmdb
 from lib.api.flix.kodi import ADDON_PATH, ADDON_NAME, set_logger, notification, translate, Progress, container_refresh
 from lib.library import Library
-from lib.providers import play_search, play_movie, play_episode
+from lib.providers import play_search, play_movie, play_show, play_season, play_episode
 from lib.settings import get_language, include_adult_content, is_search_history_enabled
 from lib.storage import SearchHistory
 from lib.subtitles import SubtitlesService
@@ -91,15 +91,22 @@ def add_movie(movie):
 
 def add_show(show):
     item = show.to_list_item()
-    item.addContextMenuItems([(translate(30133), action(library_add, SHOWS_TYPE, show.show_id))])
+    item.addContextMenuItems([
+        (translate(30133), action(library_add, SHOWS_TYPE, show.show_id)),
+        (translate(30139), media(play_show, show.show_id)),
+    ])
     addDirectoryItem(plugin.handle, plugin.url_for(handle_show, show.show_id), item, isFolder=True)
 
 
 def add_season(season):
+    item = season.to_list_item()
+    item.addContextMenuItems([
+        (translate(30139), media(play_season, season.show_id, season.season_number)),
+    ])
     addDirectoryItem(
         plugin.handle,
         plugin.url_for(handle_season, season.show_id, season.season_number),
-        season.to_list_item(),
+        item,
         isFolder=True,
     )
 
@@ -494,6 +501,8 @@ def play_query(query):
 
 
 plugin.add_route(play_movie, "/providers/play_movie/<movie_id>")
+plugin.add_route(play_show, "/providers/play_show/<show_id>")
+plugin.add_route(play_season, "/providers/play_season/<show_id>/<season_number>")
 plugin.add_route(play_episode, "/providers/play_episode/<show_id>/<season_number>/<episode_number>")
 
 
