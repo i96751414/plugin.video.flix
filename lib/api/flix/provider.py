@@ -105,6 +105,12 @@ class Provider(object):
             def search_movie(self, tmdb_id, title, titles, year=None):
                 return self.search("{:s} {:d}".format(title, year) if year else title)
 
+            def search_show(self, tmdb_id, show_title, titles, year=None):
+                return self.search("{:s} {:d}".format(show_title, year) if year else show_title)
+
+            def search_season(self, tmdb_id, show_title, season_number, titles):
+                return  self.search("{:s} S{:02d}".format(show_title, season_number))
+
             def search_episode(self, tmdb_id, show_title, season_number, episode_number, titles):
                 return self.search("{:s} S{:02d}E{:02d}".format(show_title, season_number, episode_number))
 
