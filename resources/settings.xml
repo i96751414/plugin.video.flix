@@ -25,6 +25,7 @@
         <setting id="add_unaired_episodes" type="bool" label="30018" default="false"/>
         <setting id="add_special_episodes" type="bool" label="30019" default="false"/>
         <setting id="update_kodi_library" type="bool" label="30020" default="false"/>
+        <setting id="enable_library_progress" type="bool" label="30026" default="true"/>
         <setting id="library_auto_update" type="bool" label="30022" default="false"/>
         <setting id="library_auto_update_rate" type="slider" label="30025" option="int" range="1,1,30" default="1"
                  enable="eq(-1,true)" subsetting="true"/>

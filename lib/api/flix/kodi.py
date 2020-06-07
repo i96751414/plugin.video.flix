@@ -299,10 +299,13 @@ class Progress(object):
     :param iterable: The iterable to be wrapped.
     :param length: The iterable length (optional).
     :param impl: The dialog implementation to use (default :class:`xbmcgui.DialogProgressBG`).
+    :param percent_range: The percentage range of this iterable (useful when there are multiple iterables).
+    :param percent_offset: The percentage offset of this iterable (useful when there are multiple iterables).
     :param kwargs: Arguments to pass to `dialog.create()` method.
     """
 
-    def __init__(self, iterable, length=None, impl=xbmcgui.DialogProgressBG, **kwargs):
+    def __init__(self, iterable, length=None, impl=xbmcgui.DialogProgressBG, percent_range=100, percent_offset=0,
+                 **kwargs):
         self._iterable = iterable
         if length is None:
             if not hasattr(self._iterable, "__len__"):
@@ -311,6 +314,8 @@ class Progress(object):
         else:
             self._length = length
         self._impl = impl
+        self._percent_range = percent_range
+        self._percent_offset = percent_offset
         self._kwargs = kwargs
         self._dialog = None
 
@@ -320,7 +325,7 @@ class Progress(object):
         self._dialog = self._impl()
         self._dialog.create(**self._kwargs)
         for i, obj in enumerate(self._iterable):
-            self._dialog.update(int(100 * (i + 1) / self._length))
+            self._dialog.update(int(self._percent_offset + self._percent_range * (i + 1) / self._length))
             yield obj
         self.close()
 

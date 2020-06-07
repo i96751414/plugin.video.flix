@@ -122,6 +122,10 @@ msgctxt "#30025"
 msgid "Refresh rate (days)"
 msgstr "Taxa de atualização (dias)"
 
+msgctxt "#30026"
+msgid "Enable progress dialog"
+msgstr "Ativar diálogo de progresso"
+
 # Navigation
 msgctxt "#30100"
 msgid "Discover"
@@ -282,3 +286,15 @@ msgstr "Biblioteca re-construida"
 msgctxt "#30139"
 msgid "Play"
 msgstr "Reproduzir"
+
+msgctxt "#30140"
+msgid "Adding contents to library"
+msgstr "A adcionar conteúdos na biblioteca"
+
+msgctxt "#30141"
+msgid "Updating library"
+msgstr "A atualizar biblioteca"
+
+msgctxt "#30142"
+msgid "Re-building library"
+msgstr "A reconstruir biblioteca"

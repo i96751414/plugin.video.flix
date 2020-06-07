@@ -6,10 +6,10 @@ from threading import Lock
 
 from xbmc import executebuiltin, Monitor
 
-from lib.api.flix.kodi import ADDON_ID, translate
+from lib.api.flix.kodi import ADDON_ID, ADDON_NAME, translate, Progress
 from lib.api.flix.utils import make_legal_name
 from lib.settings import get_library_path, add_special_episodes, add_unaired_episodes, update_kodi_library, \
-    include_adult_content
+    include_adult_content, is_library_progress_enabled
 from lib.storage import Storage
 from lib.tmdb import Season, Movie, Show, Discover, get_movies, get_shows
 
@@ -118,8 +118,15 @@ class Library(object):
             (item_id, item_type)).fetchone()
         return row and row[0]
 
+    def _storage_count_entries(self):
+        return self._storage.count(self._table_name)
+
     def _storage_get_entries(self):
         return self._storage.fetch_items("SELECT * FROM `{}`;".format(self._table_name))
+
+    def _storage_count_entries_by_type(self, item_type):
+        return self._storage.execute(
+            "SELECT COUNT(*) FROM `{}` WHERE type = ?;".format(self._table_name), (item_type,)).fetchone()[0]
 
     def _storage_get_entries_by_type(self, item_type):
         return self._storage.fetch_items(
@@ -203,7 +210,11 @@ class Library(object):
         return True
 
     def rebuild(self):
-        for item_id, item_type, path in self._storage_get_entries():
+        items_iter = self._storage_get_entries()
+        if is_library_progress_enabled():
+            items_iter = Progress(items_iter, self._storage_count_entries(),
+                                  heading=ADDON_NAME, message=translate(30142))
+        for item_id, item_type, path in items_iter:
             if item_type == self.MOVIE_TYPE:
                 self._add_movie(Movie(item_id), path)
             elif item_type == self.SHOW_TYPE:
@@ -216,16 +227,24 @@ class Library(object):
             self.update_shows(wait=True)
 
     def update_library(self):
-        for item_id, path in self._storage_get_entries_by_type(self.SHOW_TYPE):
+        items_iter = self._storage_get_entries_by_type(self.SHOW_TYPE)
+        if is_library_progress_enabled():
+            items_iter = Progress(items_iter, self._storage_count_entries_by_type(self.SHOW_TYPE),
+                                  heading=ADDON_NAME, message=translate(30141))
+        for item_id, path in items_iter:
             logging.debug("Updating show %s on %s", item_id, path)
             self._add_show(Show(item_id), path, override_if_exists=False)
         if self._update_kodi_library:
+            self.update_movies(wait=True)
             self.update_shows(wait=True)
 
     def discover_contents(self, pages):
         include_adult = include_adult_content()
         api = Discover()
-        for page in range(1, pages + 1):
+        pages_iter = range(1, pages + 1)
+        if is_library_progress_enabled():
+            pages_iter = Progress(pages_iter, pages, heading=ADDON_NAME, message=translate(30140))
+        for page in pages_iter:
             for movie in get_movies(api.movie(page=page, include_adult=include_adult))[0]:
                 logging.debug("Adding movie %s to library", movie.movie_id)
                 self.add_movie(movie)
