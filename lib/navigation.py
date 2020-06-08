@@ -54,13 +54,13 @@ def action(func, *args, **kwargs):
 def query_arg(name, required=True):
     def decorator(func):
         @wraps(func)
-        def wrapper(**kwargs):
+        def wrapper(*args, **kwargs):
             try:
                 kwargs.setdefault(name, plugin.args[name][0])
             except KeyError:
                 if required:
                     raise
-            return func(**kwargs)
+            return func(*args, **kwargs)
 
         return wrapper
 
