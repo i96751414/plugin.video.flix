@@ -31,7 +31,7 @@ class DialogSelect(WindowXMLDialog):
             item.setArt({"icon": icon})
         self.addItem(item)
 
-    def addItem(self, item, position=sys.maxint):
+    def addItem(self, item, position=sys.maxsize):
         self._items.insert(position, item)
 
     def addItems(self, items):
