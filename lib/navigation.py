@@ -55,11 +55,12 @@ def query_arg(name, required=True):
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
-            try:
-                kwargs.setdefault(name, plugin.args[name][0])
-            except KeyError:
-                if required:
-                    raise
+            if name not in kwargs:
+                query_list = plugin.args.get(name)
+                if query_list:
+                    kwargs[name] = query_list[0]
+                elif required:
+                    raise AttributeError("Missing {} required query argument".format(name))
             return func(*args, **kwargs)
 
         return wrapper
