@@ -26,6 +26,7 @@ SEARCH_STORE = "store"
 SEARCH_UPDATE = "update"
 SEARCH_EDIT = "edit"
 
+set_logger(level=logging.INFO)
 plugin = Plugin()
 
 
@@ -508,7 +509,6 @@ plugin.add_route(play_episode, "/providers/play_episode/<show_id>/<season_number
 
 
 def run():
-    set_logger(level=logging.INFO)
     try:
         plugin.run()
     except Exception as e:
