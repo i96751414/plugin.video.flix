@@ -145,6 +145,27 @@ def discover():
     endOfDirectory(plugin.handle)
 
 
+def dialog_genres(media_type, kwargs):
+    genres_handle = tmdb.Genres().movie_list if media_type == MOVIES_TYPE else tmdb.Genres().tv_list
+    # noinspection PyArgumentList
+    genres_dict = tmdb.get_genres_by_name(genres_handle(language=get_language()))
+    genres_names = sorted(genres_dict.keys())
+    selected_genres = Dialog().multiselect("{} - {}".format(translate(30100), translate(30106)), genres_names)
+    has_selection = selected_genres is not None
+    if has_selection:
+        kwargs["with_genres"] = ",".join(str(genres_dict[genres_names[g]]) for g in selected_genres)
+    return has_selection
+
+
+def dialog_year(media_type, kwargs):
+    years = [str(y) for y in range(datetime.datetime.now().year, 1900 - 1, -1)]
+    selected_year = Dialog().select("{} - {}".format(translate(30100), translate(30107)), years)
+    has_selection = selected_year >= 0
+    if has_selection:
+        kwargs["primary_release_year" if media_type == MOVIES_TYPE else "first_air_date_year"] = years[selected_year]
+    return has_selection
+
+
 @plugin.route("/discover/select/<media_type>")
 def discover_select(media_type):
     if media_type == MOVIES_TYPE:
@@ -160,26 +181,21 @@ def discover_select(media_type):
         translate(30100),  # discover
         translate(30106),  # by genre
         translate(30107),  # by year
+        translate(30143),  # multiple filters
     ])
     if result < 0:
         return
 
     kwargs = {}
     if result == 1:
-        genres_handle = tmdb.Genres().movie_list if media_type == MOVIES_TYPE else tmdb.Genres().tv_list
-        # noinspection PyArgumentList
-        genres_dict = tmdb.get_genres_by_name(genres_handle(language=get_language()))
-        genres_names = sorted(genres_dict.keys())
-        selected_genres = Dialog().multiselect("{} - {}".format(translate(30100), translate(30106)), genres_names)
-        if selected_genres is None:
+        if not dialog_genres(media_type, kwargs):
             return
-        kwargs["with_genres"] = ",".join(str(genres_dict[genres_names[g]]) for g in selected_genres)
     elif result == 2:
-        years = [str(y) for y in range(datetime.datetime.now().year, 1900 - 1, -1)]
-        selected_year = Dialog().select("{} - {}".format(translate(30100), translate(30107)), years)
-        if selected_year < 0:
+        if not dialog_year(media_type, kwargs):
             return
-        kwargs["primary_release_year" if media_type == MOVIES_TYPE else "first_air_date_year"] = years[selected_year]
+    elif result == 3:
+        if not any([dialog(media_type, kwargs) for dialog in (dialog_year, dialog_genres)]):
+            return
 
     container_update(handler, **kwargs)
 

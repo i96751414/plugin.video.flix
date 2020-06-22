@@ -298,3 +298,7 @@ msgstr "A atualizar biblioteca"
 msgctxt "#30142"
 msgid "Re-building library"
 msgstr "A reconstruir biblioteca"
+
+msgctxt "#30143"
+msgid "Multiple filters"
+msgstr "Múltiplos filtros"

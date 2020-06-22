@@ -298,3 +298,7 @@ msgstr ""
 msgctxt "#30142"
 msgid "Re-building library"
 msgstr ""
+
+msgctxt "#30143"
+msgid "Multiple filters"
+msgstr ""
