@@ -1,3 +1,5 @@
+from xbmc import translatePath
+
 from lib.api.flix.kodi import get_boolean_setting, get_int_setting, get_setting, get_language_iso_639_1, set_any_setting
 
 
@@ -45,7 +47,7 @@ def get_os_password():
 
 
 def get_os_folder():
-    return get_setting("os_folder")
+    return translatePath(get_setting("os_folder"))
 
 
 def get_scraper_thrads():
@@ -57,7 +59,7 @@ def auto_choose_media():
 
 
 def get_library_path():
-    return get_setting("library_path")
+    return translatePath(get_setting("library_path"))
 
 
 def add_unaired_episodes():
