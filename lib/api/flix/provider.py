@@ -118,7 +118,7 @@ class Provider(object):
     """
 
     def __init__(self):
-        self.logger = set_logger("provider", level=logging.INFO)
+        self.logger = set_logger("provider")
         self._methods = {}
         for name in dir(self):
             if not name.startswith("_") and name != "register":

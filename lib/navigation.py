@@ -26,7 +26,7 @@ SEARCH_STORE = "store"
 SEARCH_UPDATE = "update"
 SEARCH_EDIT = "edit"
 
-set_logger(level=logging.INFO)
+set_logger()
 plugin = Plugin()
 
 

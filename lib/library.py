@@ -60,6 +60,7 @@ class LibraryMonitor(Monitor):
         return True
 
     def start_scan(self, path=None, wait=False):
+        logging.debug("Starting scan with path='%s' and wait=%s", path, wait)
         with self._lock:
             self._scan_started = self._scan_finished = False
             args = [self._library]
@@ -71,6 +72,7 @@ class LibraryMonitor(Monitor):
                 self.wait_scan_finish()
 
     def clean_library(self, wait=False):
+        logging.debug("Cleaning library with wait=%s", wait)
         with self._lock:
             self._clean_started = self._clean_finished = False
             executebuiltin("CleanLibrary(" + self._library + ")")

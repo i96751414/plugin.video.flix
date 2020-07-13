@@ -362,7 +362,7 @@ class KodiLogHandler(logging.StreamHandler):
         pass
 
 
-def set_logger(name=None, level=logging.INFO):
+def set_logger(name=None, level=logging.NOTSET):
     """
     Set a :mod:`logging` logger using :func:`xbmc.log` in the background.
 

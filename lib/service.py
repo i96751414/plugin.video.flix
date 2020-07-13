@@ -1,4 +1,3 @@
-import logging
 import time
 
 import xbmc
@@ -28,7 +27,7 @@ class LibraryMonitor(xbmc.Monitor):
 
 
 def run(delay=10):
-    set_logger(level=logging.INFO)
+    set_logger()
     monitor = LibraryMonitor()
     if not monitor.waitForAbort(delay):
         monitor.watch()
