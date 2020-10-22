@@ -27,6 +27,8 @@ SEARCH_STORE = "store"
 SEARCH_UPDATE = "update"
 SEARCH_EDIT = "edit"
 
+VIEW_PROPERTY = "view"
+
 set_logger()
 plugin = Plugin()
 
@@ -73,7 +75,7 @@ def query_arg(name, required=True):
 def handle_view(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
-        view_list = plugin.args.get("view")
+        view_list = plugin.args.get(VIEW_PROPERTY)
         ret = func(*args, **kwargs)
         if view_list:
             set_view_mode(view_list[0])
@@ -547,7 +549,7 @@ def play_query(query):
 @plugin.route("/set_view")
 @query_arg("url")
 def set_view(url):
-    container_update("{}{}view={}".format(url, "&" if "?" in url else "?", get_current_view_id()))
+    container_update(url + ("&" if "?" in url else "?") + VIEW_PROPERTY + "=" + str(get_current_view_id()))
 
 
 plugin.add_route(play_movie, "/providers/play_movie/<movie_id>")
