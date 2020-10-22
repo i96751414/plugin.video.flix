@@ -143,6 +143,26 @@ def notification(message, heading=ADDON_NAME, icon=ADDON_ICON, time=5000, sound=
     xbmcgui.Dialog().notification(heading, message, icon, time, sound)
 
 
+def get_current_view_id():
+    """
+    Gets the current view ID.
+
+    :return: The current view ID.
+    :rtype: int
+    """
+    return xbmcgui.Window(xbmcgui.getCurrentWindowId()).getFocusId()
+
+
+def set_view_mode(view_id):
+    """
+    Sets the current view mode.
+
+    :param view_id: The view ID.
+    :type view_id: int
+    """
+    xbmc.executebuiltin("Container.SetViewMode({})".format(view_id))
+
+
 def get_boolean_setting(setting):
     """
     Get setting as boolean.
@@ -263,6 +283,68 @@ def container_refresh():
     Refresh the current container.
     """
     xbmc.executebuiltin("Container.Refresh")
+
+
+def container_update(path):
+    """
+    Update the container to the specified path.
+
+    :param path: The path where to update.
+    :type path: str
+    """
+    xbmc.executebuiltin("Container.Update({})".format(path))
+
+
+def run_plugin(plugin):
+    """
+    Runs the plugin. Full path must be specified. Does not work for folder plugins.
+
+    :param plugin: Full path of the plugin.
+    :type plugin: str
+    """
+    xbmc.executebuiltin("RunPlugin({})".format(plugin))
+
+
+def run_script(script, *args):
+    """
+    Runs the python script. You must specify the add-on id of the script.
+    As of 2007/02/24, all extra parameters are passed to the script as arguments and
+    can be accessed by python using sys.argv.
+
+    :param script: The script addon-id.
+    :type script: str
+    :param args: The extra parameters to be passed.
+    :type args: str
+    """
+    xbmc.executebuiltin("RunScript({})".format(",".join((script,) + args)))
+
+
+def update_library(database, path=None):
+    """
+    Takes either "video" or "music" as a parameter to begin updating the corresponding database.
+    For "video" you can additionally specify a specific path to be scanned.
+
+    :param database: The database type.
+    :type database: str
+    :param path: The path to be scanned.
+    :type path: str
+    """
+    args = [database]
+    if path:
+        args.append(path)
+    xbmc.executebuiltin("UpdateLibrary({})".format(",".join(args)))
+
+
+def clean_library(database):
+    """
+    This funtion will perform a number of 'cleanup' tasks on your video database and can be run
+    if you have moved, deleted or renamed files.
+    Takes either "video" or "music" as a parameter to begin cleaning the corresponding database.
+
+    :param database: The database type.
+    :type database: str
+    """
+    xbmc.executebuiltin("CleanLibrary({})".format(database))
 
 
 def busy_dialog():

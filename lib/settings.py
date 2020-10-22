@@ -112,3 +112,7 @@ def set_library_auto_add_last(value):
 
 def is_library_progress_enabled():
     return get_boolean_setting("enable_library_progress")
+
+
+def propagate_view_type():
+    return get_boolean_setting("propagate_view_type")

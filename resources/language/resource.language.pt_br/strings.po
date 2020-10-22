@@ -126,6 +126,10 @@ msgctxt "#30026"
 msgid "Enable progress dialog"
 msgstr "Ativar diálogo de progresso"
 
+msgctxt "#30027"
+msgid "Propagate view type"
+msgstr "Propagar tipo de visualização"
+
 # Navigation
 msgctxt "#30100"
 msgid "Discover"

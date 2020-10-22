@@ -13,7 +13,7 @@ import xbmc
 import xbmcaddon
 import xbmcgui
 
-from .kodi import ADDON_ID, ADDON_NAME, get_installed_addons, notify_all, set_logger
+from .kodi import ADDON_ID, ADDON_NAME, get_installed_addons, notify_all, set_logger, run_script
 from .utils import bytes_to_str, str_to_bytes
 
 __all__ = ["ProviderResult", "Provider"]
@@ -32,7 +32,7 @@ def send_to_providers(providers, method, *args, **kwargs):
         data["kwargs"] = kwargs
     data_b64 = bytes_to_str(base64.b64encode(str_to_bytes(json.dumps(data))))
     for provider in providers:
-        xbmc.executebuiltin("RunScript({}, {}, {}, {})".format(provider, ADDON_ID, method, data_b64))
+        run_script(provider, ADDON_ID, method, data_b64)
 
 
 def send_to_provider(provider, method, *args, **kwargs):

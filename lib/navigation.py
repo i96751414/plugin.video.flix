@@ -11,10 +11,11 @@ from xbmcgui import ListItem, Dialog
 from xbmcplugin import addDirectoryItem, endOfDirectory, setContent, setResolvedUrl
 
 from lib import tmdb
-from lib.api.flix.kodi import ADDON_PATH, ADDON_NAME, set_logger, notification, translate, Progress, container_refresh
+from lib.api.flix.kodi import ADDON_PATH, ADDON_NAME, set_logger, notification, translate, Progress, \
+    container_refresh, get_current_view_id, set_view_mode, container_update, run_plugin
 from lib.library import Library
 from lib.providers import play_search, play_movie, play_show, play_season, play_episode
-from lib.settings import get_language, include_adult_content, is_search_history_enabled
+from lib.settings import get_language, include_adult_content, is_search_history_enabled, propagate_view_type
 from lib.storage import SearchHistory
 from lib.subtitles import SubtitlesService
 
@@ -69,16 +70,32 @@ def query_arg(name, required=True):
     return decorator
 
 
+def handle_view(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        view_list = plugin.args.get("view")
+        ret = func(*args, **kwargs)
+        if view_list:
+            set_view_mode(view_list[0])
+        return ret
+
+    return wrapper
+
+
 def handle_page(data, func, *args, **kwargs):
     page = int(kwargs.get("page", 1))
     total_pages = data["total_pages"] if isinstance(data, dict) else data
     if page < total_pages:
         kwargs["page"] = page + 1
-        addDirectoryItem(plugin.handle, plugin.url_for(func, *args, **kwargs), li(30105, "next.png"), isFolder=True)
+        url = plugin.url_for(func, *args, **kwargs)
+        propagate_view = propagate_view_type()
+        if propagate_view:
+            url = plugin.url_for(set_view, url=url)
+        addDirectoryItem(plugin.handle, url, li(30105, "next.png"), isFolder=not propagate_view)
 
 
-def container_update(func, *args, **kwargs):
-    executebuiltin("Container.Update({})".format(plugin.url_for(func, *args, **kwargs)))
+def plugin_update(func, *args, **kwargs):
+    container_update(plugin.url_for(func, *args, **kwargs))
 
 
 def add_person(person_li, person_id):
@@ -197,13 +214,14 @@ def discover_select(media_type):
         if not any([dialog(media_type, kwargs) for dialog in (dialog_year, dialog_genres)]):
             return
 
-    container_update(handler, **kwargs)
+    plugin_update(handler, **kwargs)
 
 
 @plugin.route("/discover/movies")
-@plugin.route("/discover/movies/<page>")
+@query_arg("page", required=False)
 @query_arg("primary_release_year", required=False)
 @query_arg("with_genres", required=False)
+@handle_view
 def discover_movies(**kwargs):
     setContent(plugin.handle, MOVIES_TYPE)
     kwargs.setdefault("include_adult", include_adult_content())
@@ -215,9 +233,10 @@ def discover_movies(**kwargs):
 
 
 @plugin.route("/discover/shows")
-@plugin.route("/discover/shows/<page>")
+@query_arg("page", required=False)
 @query_arg("first_air_date_year", required=False)
 @query_arg("with_genres", required=False)
+@handle_view
 def discover_shows(**kwargs):
     setContent(plugin.handle, SHOWS_TYPE)
     kwargs.setdefault("include_adult", include_adult_content())
@@ -229,7 +248,8 @@ def discover_shows(**kwargs):
 
 
 @plugin.route("/discover/people")
-@plugin.route("/discover/people/<page>")
+@query_arg("page", required=False)
+@handle_view
 def discover_people(**kwargs):
     data = tmdb.People().popular(**kwargs)
     for person_li, person_id in tmdb.person_list_items(data):
@@ -249,7 +269,8 @@ def movies():
 
 
 @plugin.route("/movies/trending")
-@plugin.route("/movies/trending/<page>")
+@query_arg("page", required=False)
+@handle_view
 def trending_movies(**kwargs):
     setContent(plugin.handle, MOVIES_TYPE)
     data = tmdb.Trending("movie", "week").get_trending(**kwargs)
@@ -260,7 +281,8 @@ def trending_movies(**kwargs):
 
 
 @plugin.route("/movies/get/<call>")
-@plugin.route("/movies/get/<call>/<page>")
+@query_arg("page", required=False)
+@handle_view
 def get_movies(call, **kwargs):
     setContent(plugin.handle, MOVIES_TYPE)
     logging.debug("Going to call tmdb.Movies().%s()", call)
@@ -282,7 +304,8 @@ def shows():
 
 
 @plugin.route("/shows/trending")
-@plugin.route("/shows/trending/<page>")
+@query_arg("page", required=False)
+@handle_view
 def trending_shows(**kwargs):
     setContent(plugin.handle, SHOWS_TYPE)
     data = tmdb.Trending("tv", "week").get_trending(**kwargs)
@@ -293,7 +316,8 @@ def trending_shows(**kwargs):
 
 
 @plugin.route("/shows/get/<call>")
-@plugin.route("/shows/get/<call>/<page>")
+@query_arg("page", required=False)
+@handle_view
 def get_shows(call, **kwargs):
     setContent(plugin.handle, SHOWS_TYPE)
     logging.debug("Going to call tmdb.TV().%s()", call)
@@ -331,13 +355,14 @@ def search():
     if search_type < 0:
         return
     if is_search_history_enabled():
-        container_update(search_history, search_type)
+        plugin_update(search_history, search_type)
     else:
         do_query(search_type)
 
 
 @plugin.route("/search_history/<search_type>")
-@plugin.route("/search_history/<search_type>/<page>")
+@query_arg("page", required=False)
+@handle_view
 def search_history(search_type, page=1):
     search_type = int(search_type)
     page = int(page)
@@ -412,12 +437,13 @@ def do_query(search_type, query=None, search_action=None):
             if search_action in (SEARCH_STORE, SEARCH_UPDATE, SEARCH_EDIT):
                 container_refresh()
         else:
-            container_update(handle_search, search_type=search_type, query=query)
+            plugin_update(handle_search, search_type=search_type, query=query)
 
 
 @plugin.route("/search/<search_type>")
-@plugin.route("/search/<search_type>/<page>")
+@query_arg("page", required=False)
 @query_arg("query")
+@handle_view
 def handle_search(search_type, **kwargs):
     search_type = int(search_type)
     kwargs.setdefault("include_adult", include_adult_content())
@@ -497,7 +523,7 @@ def play_trailer(media_type, tmdb_id, season_number=None, episode_number=None, l
 
     for result in tmdb_obj.videos(language=language)["results"]:
         if result["type"] == "Trailer" and result["site"] == "YouTube":
-            executebuiltin("RunPlugin(plugin://plugin.video.youtube/play/?video_id={})".format(result["key"]))
+            run_plugin("plugin://plugin.video.youtube/play/?video_id=" + result["key"])
             return
 
     if language == fallback_language:
@@ -516,6 +542,12 @@ def play_trailer(media_type, tmdb_id, season_number=None, episode_number=None, l
 @query_arg("query")
 def play_query(query):
     play_search(query)
+
+
+@plugin.route("/set_view")
+@query_arg("url")
+def set_view(url):
+    container_update("{}{}view={}".format(url, "&" if "?" in url else "?", get_current_view_id()))
 
 
 plugin.add_route(play_movie, "/providers/play_movie/<movie_id>")

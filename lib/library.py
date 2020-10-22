@@ -4,9 +4,9 @@ import time
 from datetime import datetime
 from threading import Lock
 
-from xbmc import executebuiltin, Monitor
+from xbmc import Monitor
 
-from lib.api.flix.kodi import ADDON_ID, ADDON_NAME, translate, Progress
+from lib.api.flix.kodi import ADDON_ID, ADDON_NAME, translate, Progress, update_library, clean_library
 from lib.api.flix.utils import make_legal_name
 from lib.settings import get_library_path, add_special_episodes, add_unaired_episodes, update_kodi_library, \
     include_adult_content, is_library_progress_enabled
@@ -63,10 +63,7 @@ class LibraryMonitor(Monitor):
         logging.debug("Starting scan with path='%s' and wait=%s", path, wait)
         with self._lock:
             self._scan_started = self._scan_finished = False
-            args = [self._library]
-            if path:
-                args.append(path)
-            executebuiltin("UpdateLibrary(" + ",".join(args) + ")")
+            update_library(self._library, path)
         if wait:
             if self.wait_scan_start(10):
                 self.wait_scan_finish()
@@ -75,7 +72,7 @@ class LibraryMonitor(Monitor):
         logging.debug("Cleaning library with wait=%s", wait)
         with self._lock:
             self._clean_started = self._clean_finished = False
-            executebuiltin("CleanLibrary(" + self._library + ")")
+            clean_library(self._library)
         if wait:
             if self.wait_clean_start(10):
                 self.wait_clean_finish()
