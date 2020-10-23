@@ -23,14 +23,15 @@ class Storage(object):
         return self.cursor.execute(query + " LIMIT {:d} OFFSET {:d}".format(size, size * (page_number - 1)),
                                    *args, **kwargs)
 
-    def pages_count(self, table_name, page_size):
-        return (self.count(table_name) + page_size - 1) // page_size
+    def pages_count(self, table_name, page_size, **kwargs):
+        return (self.count(table_name, **kwargs) + page_size - 1) // page_size
 
-    def clear(self, table_name):
-        self.execute_and_commit("DELETE FROM `{}`".format(table_name))
+    def delete(self, table_name, **kwargs):
+        self.execute_and_commit("DELETE FROM `{}`{}".format(table_name, self._where(kwargs)), kwargs.values())
 
-    def count(self, table_name):
-        return self.cursor.execute("SELECT COUNT(*) FROM `{}`".format(table_name)).fetchone()[0]
+    def count(self, table_name, **kwargs):
+        return self.cursor.execute(
+            "SELECT COUNT(*) FROM `{}`{}".format(table_name, self._where(kwargs)), kwargs.values()).fetchone()[0]
 
     def fetch_batches(self, size, *args, **kwargs):
         result = self.execute(*args, **kwargs)
@@ -49,6 +50,10 @@ class Storage(object):
     def close(self):
         self.cursor.close()
         self.conn.close()
+
+    @staticmethod
+    def _where(kwargs):
+        return (" WHERE " + " AND ".join(["{} = ?".format(k) for k in kwargs])) if kwargs else ""
 
     def __enter__(self):
         return self
@@ -87,20 +92,16 @@ class SearchHistory(object):
             "WHERE type = ? AND search = ?;".format(self._table_name), (new_search, search_type, old_search))
 
     def delete_entry_by_id(self, search_id):
-        self._storage.execute_and_commit("DELETE FROM `{}` WHERE id = ?;".format(self._table_name), (search_id,))
+        self._storage.delete(self._table_name, id=search_id)
 
     def delete_entry(self, search_type, search):
-        self._storage.execute_and_commit(
-            "DELETE FROM `{}` WHERE type = ? AND search = ?;".format(self._table_name), (search_type, search))
+        self._storage.delete(self._table_name, type=search_type, search=search)
 
-    def pages_count(self):
-        return self._storage.pages_count(self._table_name, self._page_size)
-
-    def entries_count(self):
-        return self._storage.count(self._table_name)
+    def pages_count(self, search_type):
+        return self._storage.pages_count(self._table_name, self._page_size, type=search_type)
 
     def clear_entries(self):
-        self._storage.clear(self._table_name)
+        self._storage.delete(self._table_name)
 
     def close(self):
         self._storage.close()

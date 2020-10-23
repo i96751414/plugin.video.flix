@@ -386,7 +386,7 @@ def search_history(search_type, page=1):
                 plugin.url_for(do_query, search_type=search_type, search_action=SEARCH_UPDATE, query=query),
                 item,
             )
-        handle_page(s.pages_count(), search_history, search_type=search_type, page=page)
+        handle_page(s.pages_count(search_type), search_history, search_type=search_type, page=page)
     endOfDirectory(plugin.handle)
 
 
