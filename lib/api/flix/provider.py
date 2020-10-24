@@ -100,6 +100,7 @@ class Provider(object):
 
         class CustomProvider(Provider):
             def search(self, query):
+                # Implementation here
                 return []
 
             def search_movie(self, tmdb_id, title, titles, year=None):
@@ -109,7 +110,7 @@ class Provider(object):
                 return self.search("{:s} {:d}".format(show_title, year) if year else show_title)
 
             def search_season(self, tmdb_id, show_title, season_number, titles):
-                return  self.search("{:s} S{:02d}".format(show_title, season_number))
+                return self.search("{:s} S{:02d}".format(show_title, season_number))
 
             def search_episode(self, tmdb_id, show_title, season_number, episode_number, titles):
                 return self.search("{:s} S{:02d}E{:02d}".format(show_title, season_number, episode_number))
