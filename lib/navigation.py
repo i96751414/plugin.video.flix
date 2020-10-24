@@ -405,7 +405,7 @@ def clear_search_history():
 
 
 @plugin.route("/query/<search_type>")
-@plugin.route("/query/<search_type>/<search_action>")
+@query_arg("search_action", required=False)
 @query_arg("query", required=False)
 def do_query(search_type, query=None, search_action=None):
     search_type = int(search_type)
