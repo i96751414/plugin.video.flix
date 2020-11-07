@@ -34,10 +34,12 @@ However, a provider must follow a set of rules:
 - Provide a `xbmc.python.script` extension point: see `this <https://kodi.wiki/view/HOW-TO:Script_addon>`_.
 - Implement the `Provider` API: see `flix.provider.Provider <https://flix.readthedocs.io/en/latest/flix_api.html#flix.provider.Provider>`_.
 
+See `script.flix.dummy <https://github.com/i96751414/script.flix.dummy>`_, a dummy provider mainly used for testing providers integration.
+
 Installation
 ------------
 
-Get the latest release from `github <https://github.com/i96751414/plugin.video.flix/archive/master.zip>`_ and `Install from zip <https://kodi.wiki/view/Add-on_manager#How_to_install_from_a_ZIP_file>`_ within Kodi_.
+Get the latest release from `github <https://github.com/i96751414/plugin.video.flix/releases/latest>`_ and `Install from zip <https://kodi.wiki/view/Add-on_manager#How_to_install_from_a_ZIP_file>`_ within Kodi_.
 
 Screenshots
 -----------
