@@ -306,3 +306,11 @@ msgstr "A reconstruir biblioteca"
 msgctxt "#30143"
 msgid "Multiple filters"
 msgstr "Múltiplos filtros"
+
+msgctxt "#30144"
+msgid "Similar movies"
+msgstr "Filmes similares"
+
+msgctxt "#30145"
+msgid "Similar shows"
+msgstr "Séries similares"

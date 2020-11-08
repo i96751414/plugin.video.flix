@@ -56,6 +56,10 @@ def action(func, *args, **kwargs):
     return "RunPlugin({})".format(plugin.url_for(func, *args, **kwargs))
 
 
+def update(func, *args, **kwargs):
+    return "Container.Update({})".format(plugin.url_for(func, *args, **kwargs))
+
+
 def query_arg(name, required=True):
     def decorator(func):
         @wraps(func)
@@ -107,15 +111,19 @@ def add_person(person_li, person_id):
 
 def add_movie(movie):
     item = movie.to_list_item(playable=True)
-    item.addContextMenuItems([(translate(30133), action(library_add, MOVIES_TYPE, movie.movie_id))])
+    item.addContextMenuItems([
+        (translate(30144), update(similar_movies, movie.movie_id)),
+        (translate(30133), action(library_add, MOVIES_TYPE, movie.movie_id)),
+    ])
     addDirectoryItem(plugin.handle, plugin.url_for(play_movie, movie.movie_id), item)
 
 
 def add_show(show):
     item = show.to_list_item()
     item.addContextMenuItems([
-        (translate(30133), action(library_add, SHOWS_TYPE, show.show_id)),
         (translate(30139), media(play_show, show.show_id)),
+        (translate(30145), update(similar_shows, show.show_id)),
+        (translate(30133), action(library_add, SHOWS_TYPE, show.show_id)),
     ])
     addDirectoryItem(plugin.handle, plugin.url_for(handle_show, show.show_id), item, isFolder=True)
 
@@ -283,6 +291,18 @@ def trending_movies(**kwargs):
     endOfDirectory(plugin.handle)
 
 
+@plugin.route("/movies/similar/<tmdb_id>")
+@query_arg("page", required=False)
+@handle_view
+def similar_movies(tmdb_id, **kwargs):
+    setContent(plugin.handle, MOVIES_TYPE)
+    data = tmdb.Movies(tmdb_id).similar_movies(**kwargs)
+    for movie in progress(*tmdb.get_movies(data)):
+        add_movie(movie)
+    handle_page(data, similar_movies, tmdb_id=tmdb_id, **kwargs)
+    endOfDirectory(plugin.handle)
+
+
 @plugin.route("/movies/get/<call>")
 @query_arg("page", required=False)
 @handle_view
@@ -315,6 +335,18 @@ def trending_shows(**kwargs):
     for show in progress(*tmdb.get_shows(data)):
         add_show(show)
     handle_page(data, trending_shows, **kwargs)
+    endOfDirectory(plugin.handle)
+
+
+@plugin.route("/shows/similar/<tmdb_id>")
+@query_arg("page", required=False)
+@handle_view
+def similar_shows(tmdb_id, **kwargs):
+    setContent(plugin.handle, SHOWS_TYPE)
+    data = tmdb.TV(tmdb_id).similar(**kwargs)
+    for show in progress(*tmdb.get_shows(data)):
+        add_show(show)
+    handle_page(data, similar_shows, tmdb_id=tmdb_id, **kwargs)
     endOfDirectory(plugin.handle)
 
 
