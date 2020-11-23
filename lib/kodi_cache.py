@@ -17,9 +17,10 @@ class KodiCache(object):
     def get(self, identifier):
         return self._cache.get(self._identifier(identifier))
 
-    def set(self, identifier, data):
-        return self._cache.set(self._identifier(identifier), data,
-                               expiration=datetime.timedelta(days=get_cache_expiration_days()))
+    def set(self, identifier, data, expiration=None):
+        if expiration is None:
+            expiration = datetime.timedelta(days=get_cache_expiration_days())
+        return self._cache.set(self._identifier(identifier), data, expiration=expiration)
 
     def close(self):
         self._cache.close()

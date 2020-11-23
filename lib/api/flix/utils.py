@@ -101,3 +101,19 @@ def make_legal_name(name):
     :return: The legal file name.
     """
     return RESERVED_PATH_CHARS_RE.sub("", name)
+
+
+def make_hash(obj, hash_func=hash):
+    """
+    Return the hash value for the given object.
+
+    :param obj: The object which to calculate the hash.
+    :param hash_func: Hash function to use.
+    """
+    if isinstance(obj, (tuple, list)):
+        return hash_func((type(obj), tuple(make_hash(e, hash_func) for e in obj)))
+    elif isinstance(obj, (set, frozenset)):
+        return hash_func((type(obj), tuple(make_hash(e, hash_func) for e in sorted(obj))))
+    elif isinstance(obj, dict):
+        return hash_func((type(obj), tuple((k, make_hash(obj[k]), hash_func) for k in sorted(obj))))
+    return hash_func(obj)
