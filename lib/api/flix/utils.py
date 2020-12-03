@@ -27,6 +27,7 @@ Module `utils` provides some compatibility utilities for both Python 2 and 3.
 
 """
 
+import logging
 import re
 import sys
 from concurrent.futures import ThreadPoolExecutor
@@ -91,6 +92,8 @@ def get_data(func, iterable, threads=5, **kwargs):
                     raise e
                 if yield_exceptions:
                     yield e
+                else:
+                    logging.error("Failed while performing get_data: %s", e, exc_info=True)
 
 
 def make_legal_name(name):
