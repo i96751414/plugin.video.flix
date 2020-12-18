@@ -198,6 +198,10 @@ def get_writers(crew):
     return [c["name"] for c in crew if c["job"] == "Writer"]
 
 
+def is_unaired(air_date, now):
+    return not air_date or datetime(*time.strptime(air_date, "%Y-%m-%d")[:6]) > now
+
+
 class VideoItem(object):
     def __init__(self, **kwargs):
         self._title = kwargs.get("title", "")
@@ -368,14 +372,18 @@ class Show(ShowItem):
     def alternative_titles(self):
         return self._alternative_titles
 
-    def seasons(self):
+    def seasons(self, get_unaired=True):
+        now = datetime.now()
         for season in self._data["seasons"]:
+            premiered = season.get("air_date", "")
+            if not get_unaired and is_unaired(premiered, now):
+                continue
+
             season_art = dict(self._art)
             season_info = dict(self._info)
 
             season_title = season["name"]
             season_number = season["season_number"]
-            premiered = season.get("air_date", "")
             season_info.update({
                 "mediatype": "season",
                 "status": "",
@@ -446,9 +454,11 @@ class Season(SeasonItem):
         return EpisodeItem(self._show_id, self._season_number, episode_number,
                            title=title, info=info, art=art, cast=get_cast(cast))
 
-    def episodes(self):
+    def episodes(self, get_unaired=True):
+        now = datetime.now()
         for episode in self._data["episodes"]:
-            yield self._parse_episode(episode)
+            if get_unaired or not is_unaired(episode.get("air_date"), now):
+                yield self._parse_episode(episode)
 
     def get_episode(self, episode_number):
         for episode in self._data["episodes"]:

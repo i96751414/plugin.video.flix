@@ -15,7 +15,8 @@ from lib.api.flix.kodi import ADDON_PATH, ADDON_NAME, set_logger, notification, 
     container_refresh, get_current_view_id, set_view_mode, container_update, run_plugin
 from lib.library import Library
 from lib.providers import play_search, play_movie, play_show, play_season, play_episode
-from lib.settings import get_language, include_adult_content, is_search_history_enabled, propagate_view_type
+from lib.settings import get_language, include_adult_content, is_search_history_enabled, propagate_view_type, \
+    show_unaired_episodes
 from lib.storage import SearchHistory
 from lib.subtitles import SubtitlesService
 
@@ -518,7 +519,7 @@ def handle_person(person_id):
 @plugin.route("/handle_show/<show_id>")
 def handle_show(show_id):
     setContent(plugin.handle, SHOWS_TYPE)
-    for season in tmdb.Show(show_id).seasons():
+    for season in tmdb.Show(show_id).seasons(get_unaired=show_unaired_episodes()):
         add_season(season)
     endOfDirectory(plugin.handle)
 
@@ -526,7 +527,7 @@ def handle_show(show_id):
 @plugin.route("/handle_season/<show_id>/<season_number>")
 def handle_season(show_id, season_number):
     setContent(plugin.handle, EPISODES_TYPE)
-    for episode in tmdb.Season(show_id, season_number).episodes():
+    for episode in tmdb.Season(show_id, season_number).episodes(get_unaired=show_unaired_episodes()):
         add_episode(episode)
     endOfDirectory(plugin.handle)
 

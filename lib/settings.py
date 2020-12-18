@@ -116,3 +116,7 @@ def is_library_progress_enabled():
 
 def propagate_view_type():
     return get_boolean_setting("propagate_view_type")
+
+
+def show_unaired_episodes():
+    return get_boolean_setting("show_unaired_episodes")

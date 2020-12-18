@@ -130,6 +130,10 @@ msgctxt "#30027"
 msgid "Propagate view type"
 msgstr ""
 
+msgctxt "#30028"
+msgid "Show unaired episodes"
+msgstr ""
+
 # Navigation
 msgctxt "#30100"
 msgid "Discover"

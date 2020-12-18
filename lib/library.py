@@ -1,7 +1,6 @@
 import logging
 import os
 import time
-from datetime import datetime
 from threading import Lock
 
 from xbmc import Monitor
@@ -169,20 +168,10 @@ class Library(object):
         if not os.path.isdir(show_dir):
             os.makedirs(show_dir)
 
-        now = datetime.now()
-        for season in item.seasons():
+        for season in item.seasons(get_unaired=self._add_unaired_episodes):
             if not self._add_specials and season.season_number == 0:
                 continue
-            if not self._add_unaired_episodes:
-                air_date = season.get_info("premiered")
-                if not air_date or datetime(*time.strptime(air_date, "%Y-%m-%d")[:6]) > now:
-                    continue
-            for episode in Season(item.show_id, season.season_number).episodes():
-                if not self._add_unaired_episodes:
-                    air_date = episode.get_info("aired")
-                    if not air_date or datetime(*time.strptime(air_date, "%Y-%m-%d")[:6]) > now:
-                        continue
-
+            for episode in Season(item.show_id, season.season_number).episodes(get_unaired=self._add_unaired_episodes):
                 episode_name = u"{} S{:02d}E{:02d}".format(name, episode.season_number, episode.episode_number)
                 episode_path = os.path.join(show_dir, episode_name + ".strm")
                 if override_if_exists or not os.path.exists(episode_path):
