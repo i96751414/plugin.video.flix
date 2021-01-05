@@ -3,5 +3,5 @@ flake8
 futures
 requests
 tmdbsimple
-https://github.com/romanvm/Kodistubs/tarball/master
+Kodistubs==18.0.0
 https://github.com/tamland/kodi-plugin-routing/tarball/master
