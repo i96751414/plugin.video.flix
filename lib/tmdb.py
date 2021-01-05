@@ -1,13 +1,14 @@
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import tmdbsimple
 import xbmcgui
+from cached import Cache
 
 from lib.api.flix.kodi import ADDON_ID
 from lib.api.flix.utils import get_data
-from lib.kodi_cache import KodiCache
-from lib.settings import is_cache_enabled, prefer_original_titles, get_language, get_scraper_thrads
+from lib.settings import is_cache_enabled, prefer_original_titles, get_language, get_scraper_thrads, \
+    get_cache_expiration_days
 
 IMAGE_BASE_URL = "https://image.tmdb.org/t/p/"
 tmdbsimple.API_KEY = "eee9ac1822295afd8dadb555a0cc4ea8"
@@ -16,16 +17,16 @@ tmdbsimple.API_KEY = "eee9ac1822295afd8dadb555a0cc4ea8"
 class TMDB(tmdbsimple.base.TMDB):
     def __init__(self):
         super(TMDB, self).__init__()
-        self._cache = KodiCache() if is_cache_enabled() else None
+        self._cache = Cache.get_instance() if is_cache_enabled() else None
 
     def _GET(self, path, params=None):
         if self._cache is None:
             return super(TMDB, self)._GET(path, params=params)
         identifier = "{}|{}".format(path, repr(params))
-        data = self._cache.get(identifier)
+        data = self._cache.get(identifier, hashed_key=True)
         if data is None:
             data = super(TMDB, self)._GET(path, params=params)
-            self._cache.set(identifier, data)
+            self._cache.set(identifier, data, timedelta(days=get_cache_expiration_days()), hashed_key=True)
         return data
 
     def _format_path(self, key):

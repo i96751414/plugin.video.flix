@@ -3,11 +3,13 @@ import io
 import logging
 import os
 import sys
+from datetime import timedelta
 
 import requests
 import xbmc
 import xbmcgui
 import xbmcplugin
+from cached import memory_cached
 
 from lib.api.flix.kodi import ADDON_ID, ADDON_DATA, get_language_iso_639_1, convert_language_iso_639_2
 from lib.api.flix.utils import assure_str
@@ -65,6 +67,10 @@ class SubtitlesService(object):
     def _get_param(self, key):
         return get_from_params(self._params, key)
 
+    @memory_cached(timedelta(minutes=30), instance_method=True)
+    def _search_subtitles(self, payload):
+        return self._api.search_subtitles(payload)
+
     def search(self, languages, search_string=None):
         path = xbmc.Player().getPlayingFile()
         if search_string is None:
@@ -102,7 +108,7 @@ class SubtitlesService(object):
             search_payload.languages = languages
 
         logging.debug("Search payload: %s", payload)
-        results = self._api.search_subtitles(payload)
+        results = self._search_subtitles(payload)
         for result in results:
             try:
                 self._add_result(result)

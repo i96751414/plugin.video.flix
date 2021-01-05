@@ -5,7 +5,7 @@
         <import addon="xbmc.addon" version="16.0.0"/>
         <import addon="script.module.routing" version="0.2.3"/>
         <import addon="script.module.requests" version="2.22.0"/>
-        <import addon="script.module.simplecache" version="1.0.18"/>
+        <import addon="script.module.cached" version="0.0.1"/>
         <import addon="script.module.tmdbsimple" version="2.2.0"/>
         <import addon="script.module.futures" version="2.2.0"/>
     </requires>
