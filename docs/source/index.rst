@@ -38,7 +38,12 @@ See `script.flix.dummy <https://github.com/i96751414/script.flix.dummy>`_, a dum
 Installation
 ------------
 
-Get the latest release from `github <https://github.com/i96751414/plugin.video.flix/releases/latest>`_ and `Install from zip <https://kodi.wiki/view/Add-on_manager#How_to_install_from_a_ZIP_file>`_ within Kodi_.
+The recommended way of installing this addon is through its `repository <https://github.com/i96751414/repository.github#installation>`_.
+This way, any updates will be automatically installed.
+
+Although **not recommended**, one can install the addon without installing its repository. To do so, get the
+`latest release <https://github.com/i96751414/plugin.video.flix/releases/latest>`_ from github.
+Please note that, if there are any additional dependencies, they won't be resolved unless the repository is installed.
 
 Indices and tables
 ------------------
