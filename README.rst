@@ -49,11 +49,5 @@ Please note that, if there are any additional dependencies, they won't be resolv
 Screenshots
 -----------
 
-.. image:: https://raw.githubusercontent.com/i96751414/plugin.video.flix/master/resources/screenshots/screenshot-1.jpg
-    :alt: Screenshot 1
-
-.. image:: https://raw.githubusercontent.com/i96751414/plugin.video.flix/master/resources/screenshots/screenshot-2.jpg
-    :alt: Screenshot 2
-
-.. image:: https://raw.githubusercontent.com/i96751414/plugin.video.flix/master/resources/screenshots/screenshot-3.jpg
-    :alt: Screenshot 3
+.. image:: resources/screenshots/screenshots.gif
+    :alt: Screenshots
