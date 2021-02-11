@@ -318,3 +318,7 @@ msgstr "Filmes similares"
 msgctxt "#30145"
 msgid "Similar shows"
 msgstr "Séries similares"
+
+msgctxt "#30146"
+msgid "No providers available"
+msgstr "Sem provedores disponíveis"

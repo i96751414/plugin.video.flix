@@ -16,6 +16,10 @@ class ResolveTimeoutError(Exception):
     pass
 
 
+class NoProvidersError(Exception):
+    pass
+
+
 class ProviderListenerDialog(ProviderListener):
     def __init__(self, providers, method, timeout=10):
         super(ProviderListenerDialog, self).__init__(providers, method, timeout=timeout)
@@ -41,6 +45,8 @@ class ProviderListenerDialog(ProviderListener):
 
 def run_providers_method(timeout, method, *args, **kwargs):
     providers = get_providers()
+    if not providers:
+        raise NoProvidersError("No available providers")
     with ProviderListenerDialog(providers, method, timeout=timeout) as listener:
         send_to_providers(providers, method, *args, **kwargs)
     return listener.data
@@ -74,9 +80,14 @@ def get_providers_results(method, *args, **kwargs):
 
 
 def play(item, method, *args, **kwargs):
+    try:
+        results = get_providers_results(method, *args, **kwargs)
+    except NoProvidersError:
+        results = None
+
     path = provider = None
-    results = get_providers_results(method, *args, **kwargs)
     handle = int(sys.argv[1])
+
     if results:
         if auto_choose_media():
             selected = 0
@@ -101,6 +112,8 @@ def play(item, method, *args, **kwargs):
                 except ResolveTimeoutError:
                     logging.warning("Provider %s took too much time to resolve", provider)
                     notification(translate(30129))
+    elif results is None:
+        notification(translate(30146))
     else:
         notification(translate(30112))
     if path:

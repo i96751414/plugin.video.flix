@@ -21,7 +21,7 @@ __all__ = ["ProviderResult", "Provider"]
 
 def get_providers():
     return [p_id for p_id, _ in get_installed_addons(addon_type="xbmc.python.script", enabled=True)
-            if p_id.startswith("script.flix.")]
+            if p_id.startswith("script.flix.") and p_id != ADDON_ID]
 
 
 def send_to_providers(providers, method, *args, **kwargs):

@@ -275,7 +275,8 @@ def get_installed_addons(addon_type="", content="unknown", enabled="all"):
     :rtype: list[tuple[str, str]]
     """
     data = execute_json_rpc("Addons.GetAddons", type=addon_type, content=content, enabled=enabled)
-    return [(a["addonid"], a["type"]) for a in data["result"]["addons"]]
+    addons = data["result"].get("addons")
+    return [(a["addonid"], a["type"]) for a in addons] if addons else []
 
 
 def container_refresh():
