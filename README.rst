@@ -5,8 +5,8 @@ Flix
     :target: https://flix.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
 
-.. image:: https://github.com/i96751414/plugin.video.flix/workflows/Python%20package/badge.svg
-    :target: https://github.com/i96751414/plugin.video.flix/actions?query=workflow%3A%22Python+package%22
+.. image:: https://github.com/i96751414/plugin.video.flix/workflows/build/badge.svg
+    :target: https://github.com/i96751414/plugin.video.flix/actions?query=workflow%3Abuild
     :alt: Build
 
 Flix, a movie scraper for `Kodi`_. It uses `TMDB`_ api for scraping data and allows for custom providers.
