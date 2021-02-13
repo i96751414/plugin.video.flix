@@ -13,6 +13,7 @@ from xbmcplugin import addDirectoryItem, endOfDirectory, setContent, setResolved
 from lib import tmdb
 from lib.api.flix.kodi import ADDON_PATH, ADDON_NAME, set_logger, notification, translate, Progress, \
     container_refresh, get_current_view_id, set_view_mode, container_update, run_plugin
+from lib.api.flix.utils import PY3
 from lib.library import Library
 from lib.providers import play_search, play_movie, play_show, play_season, play_episode
 from lib.settings import get_language, include_adult_content, is_search_history_enabled, propagate_view_type, \
@@ -148,6 +149,12 @@ def add_episode(episode):
         plugin.url_for(play_episode, episode.show_id, episode.season_number, episode.episode_number),
         episode.to_list_item(playable=True),
     )
+
+
+def play_youtube_video(video_id):
+    p = "plugin://plugin.video.tubed/?mode=play&video_id=" if PY3 \
+        else "plugin://plugin.video.youtube/play/?video_id="
+    run_plugin(p + video_id)
 
 
 @plugin.route("/")
@@ -559,7 +566,7 @@ def play_trailer(media_type, tmdb_id, season_number=None, episode_number=None, l
 
     for result in tmdb_obj.videos(language=language)["results"]:
         if result["type"] == "Trailer" and result["site"] == "YouTube":
-            run_plugin("plugin://plugin.video.youtube/play/?video_id=" + result["key"])
+            play_youtube_video(result["key"])
             return
 
     if language == fallback_language:

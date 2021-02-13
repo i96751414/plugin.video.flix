@@ -18,8 +18,6 @@
         <setting label="30015" type="action" action="RunPlugin(plugin://plugin.video.flix/clear_search_history)"
                  enable="eq(-1,true)" subsetting="true"/>
         <setting id="include_adult_content" type="bool" label="30007" default="false"/>
-        <setting label="30005" type="action" action="InstallAddon(plugin.video.youtube)"
-                 visible="!System.HasAddon(plugin.video.youtube)"/>
     </category>
     <!-- Library -->
     <category label="30016">

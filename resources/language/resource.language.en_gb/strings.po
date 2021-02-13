@@ -38,6 +38,7 @@ msgctxt "#30004"
 msgid "Prefer original titles"
 msgstr ""
 
+# TODO: reuse
 msgctxt "#30005"
 msgid "Install YouTube add-on"
 msgstr ""
