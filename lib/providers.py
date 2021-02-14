@@ -36,9 +36,9 @@ class ProviderListenerDialog(ProviderListener):
         self._dialog.create(ADDON_NAME, translate(30111))
         return ret
 
-    def __exit__(self, *args, **kwargs):
+    def __exit__(self, exc_type, exc_val, exc_tb):
         try:
-            return super(ProviderListenerDialog, self).__exit__(*args, **kwargs)
+            return super(ProviderListenerDialog, self).__exit__(exc_type, exc_val, exc_tb)
         finally:
             self._dialog.close()
 

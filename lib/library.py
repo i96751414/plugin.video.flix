@@ -3,6 +3,7 @@ import os
 import time
 from threading import Lock
 
+from tmdbsimple import Discover
 from xbmc import Monitor
 
 from lib.api.flix.kodi import ADDON_ID, ADDON_NAME, translate, Progress, update_library, clean_library
@@ -10,7 +11,7 @@ from lib.api.flix.utils import make_legal_name
 from lib.settings import get_library_path, add_special_episodes, add_unaired_episodes, update_kodi_library, \
     include_adult_content, is_library_progress_enabled
 from lib.storage import Storage
-from lib.tmdb import Season, Movie, Show, Discover, get_movies, get_shows
+from lib.tmdb import Season, Movie, Show, get_movies, get_shows
 
 
 class LibraryMonitor(Monitor):
@@ -37,7 +38,7 @@ class LibraryMonitor(Monitor):
         if library == self._library:
             with self._lock:
                 setattr(self, attr, True)
-                logging.debug("%s on %s library", library)
+                logging.debug("%s on %s library", attr, library)
 
     def wait_scan_start(self, timeout=0):
         return self._wait("_scan_started", timeout)
@@ -208,7 +209,7 @@ class Library(object):
             elif item_type == self.SHOW_TYPE:
                 self._add_show(Show(item_id), path)
             else:
-                logging.error("Unknown item type '%s' for id '%' and path '%s'", item_type, item_id, path)
+                logging.error("Unknown item type '%s' for id '%s' and path '%s'", item_type, item_id, path)
 
         if self._update_kodi_library:
             self.update_movies(wait=True)

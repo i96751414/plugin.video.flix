@@ -13,137 +13,32 @@ from lib.settings import is_cache_enabled, prefer_original_titles, get_language,
 IMAGE_BASE_URL = "https://image.tmdb.org/t/p/"
 tmdbsimple.API_KEY = "eee9ac1822295afd8dadb555a0cc4ea8"
 
+# noinspection PyProtectedMember
+_tmdb_original_get = tmdbsimple.base.TMDB._GET
 
-class TMDB(tmdbsimple.base.TMDB):
-    def __init__(self):
-        super(TMDB, self).__init__()
-        self._cache = Cache.get_instance() if is_cache_enabled() else None
 
-    def _GET(self, path, params=None):
-        if self._cache is None:
-            return super(TMDB, self)._GET(path, params=params)
-        identifier = "{}|{}".format(path, repr(params))
-        data = self._cache.get(identifier, hashed_key=True)
-        if data is None:
-            data = super(TMDB, self)._GET(path, params=params)
-            self._cache.set(identifier, data, timedelta(days=get_cache_expiration_days()), hashed_key=True)
-        return data
+def _tmdb_get(self, path, params=None):
+    cache = Cache.get_instance() if is_cache_enabled() else None
+    if cache is None:
+        return _tmdb_original_get(self, path, params=params)
+    identifier = "{}|{}".format(path, repr(params))
+    data = cache.get(identifier, hashed_key=True)
+    if data is None:
+        data = _tmdb_original_get(self, path, params=params)
+        cache.set(identifier, data, timedelta(days=get_cache_expiration_days()), hashed_key=True)
+    return data
 
+
+# Patching tmdbsimple to enable cache
+tmdbsimple.base.TMDB._GET = _tmdb_get
+
+
+class _TMDB(tmdbsimple.base.TMDB):
     def _format_path(self, key):
         return self._get_path(key).format(**self.__dict__)
 
 
-def _code_gen():
-    with open(tmdbsimple.__file__) as f:
-        contents = f.read()
-
-    import re
-    for imports in re.findall(r"from .+? import\s(.+)", contents):
-        for i in imports.split(","):
-            i = i.strip()
-            if tmdbsimple.base.TMDB in getattr(tmdbsimple, i).__mro__:
-                print("class {}(tmdbsimple.{}, TMDB):\n    pass\n\n".format(i.replace("_", ""), i))
-
-
-# Code automatically generated
-class Account(tmdbsimple.Account, TMDB):
-    pass
-
-
-class Authentication(tmdbsimple.Authentication, TMDB):
-    pass
-
-
-class GuestSessions(tmdbsimple.GuestSessions, TMDB):
-    pass
-
-
-class Lists(tmdbsimple.Lists, TMDB):
-    pass
-
-
-class Changes(tmdbsimple.Changes, TMDB):
-    pass
-
-
-class Configuration(tmdbsimple.Configuration, TMDB):
-    pass
-
-
-class Certifications(tmdbsimple.Certifications, TMDB):
-    pass
-
-
-class Timezones(tmdbsimple.Timezones, TMDB):
-    pass
-
-
-class Discover(tmdbsimple.Discover, TMDB):
-    pass
-
-
-class Find(tmdbsimple.Find, TMDB):
-    pass
-
-
-class Genres(tmdbsimple.Genres, TMDB):
-    pass
-
-
-class Movies(tmdbsimple.Movies, TMDB):
-    pass
-
-
-class Collections(tmdbsimple.Collections, TMDB):
-    pass
-
-
-class Companies(tmdbsimple.Companies, TMDB):
-    pass
-
-
-class Keywords(tmdbsimple.Keywords, TMDB):
-    pass
-
-
-class Reviews(tmdbsimple.Reviews, TMDB):
-    pass
-
-
-class People(tmdbsimple.People, TMDB):
-    pass
-
-
-class Credits(tmdbsimple.Credits, TMDB):
-    pass
-
-
-class Jobs(tmdbsimple.Jobs, TMDB):
-    pass
-
-
-class Search(tmdbsimple.Search, TMDB):
-    pass
-
-
-class TV(tmdbsimple.TV, TMDB):
-    pass
-
-
-class TVSeasons(tmdbsimple.TV_Seasons, TMDB):
-    pass
-
-
-class TVEpisodes(tmdbsimple.TV_Episodes, TMDB):
-    pass
-
-
-class Networks(tmdbsimple.Networks, TMDB):
-    pass
-
-
-# end of auto generated code
-class Trending(TMDB):
+class Trending(_TMDB):
     BASE_PATH = "trending"
     URLS = {
         "trending": "/{media_type}/{time_window}",
@@ -251,7 +146,8 @@ class MovieItem(VideoItem):
 
 class Movie(MovieItem):
     def __init__(self, movie_id):
-        self._data = Movies(movie_id).info(language=get_language(), append_to_response="credits,alternative_titles")
+        self._data = tmdbsimple.Movies(movie_id).info(
+            language=get_language(), append_to_response="credits,alternative_titles")
         self._alternative_titles = {
             t["iso_3166_1"].lower(): t["title"] for t in self._data.get("alternative_titles", {}).get("titles", [])
         }
@@ -319,7 +215,8 @@ class ShowItem(VideoItem):
 
 class Show(ShowItem):
     def __init__(self, show_id):
-        self._data = TV(show_id).info(language=get_language(), append_to_response="credits,alternative_titles")
+        self._data = tmdbsimple.TV(show_id).info(
+            language=get_language(), append_to_response="credits,alternative_titles")
         self._alternative_titles = {
             t["iso_3166_1"].lower(): t["title"] for t in self._data.get("alternative_titles", {}).get("results", [])
         }
@@ -423,7 +320,8 @@ class SeasonItem(ShowItem):
 
 class Season(SeasonItem):
     def __init__(self, show_id, season_number):
-        self._data = TVSeasons(show_id, season_number).info(language=get_language(), append_to_response="credits")
+        self._data = tmdbsimple.TV_Seasons(show_id, season_number).info(
+            language=get_language(), append_to_response="credits")
         self._credits = self._data.get("credits", {})
         # TODO: parse data - to_list_item is useless atm
         super(Season, self).__init__(show_id, season_number)
@@ -502,7 +400,7 @@ def _get_credits(data_credits):
 
 
 def get_person_credits(person_id, cast=True, crew=False):
-    data = People(person_id).combined_credits(language=get_language())
+    data = tmdbsimple.People(person_id).combined_credits(language=get_language())
     credits_list = []
     if cast:
         credits_list += list(_get_credits(data.get("cast", [])))

@@ -4,6 +4,7 @@ import os
 import sqlite3
 from functools import wraps
 
+import tmdbsimple
 # noinspection PyPackageRequirements
 from routing import Plugin
 from xbmc import executebuiltin
@@ -182,7 +183,7 @@ def discover():
 
 
 def dialog_genres(media_type, kwargs):
-    genres_handle = tmdb.Genres().movie_list if media_type == MOVIES_TYPE else tmdb.Genres().tv_list
+    genres_handle = tmdbsimple.Genres().movie_list if media_type == MOVIES_TYPE else tmdbsimple.Genres().tv_list
     # noinspection PyArgumentList
     genres_dict = tmdb.get_genres_by_name(genres_handle(language=get_language()))
     genres_names = sorted(genres_dict.keys())
@@ -244,7 +245,7 @@ def discover_select(media_type):
 def discover_movies(**kwargs):
     setContent(plugin.handle, MOVIES_TYPE)
     kwargs.setdefault("include_adult", include_adult_content())
-    data = tmdb.Discover().movie(**kwargs)
+    data = tmdbsimple.Discover().movie(**kwargs)
     for movie in progress(*tmdb.get_movies(data)):
         add_movie(movie)
     handle_page(data, discover_movies, **kwargs)
@@ -259,7 +260,7 @@ def discover_movies(**kwargs):
 def discover_shows(**kwargs):
     setContent(plugin.handle, SHOWS_TYPE)
     kwargs.setdefault("include_adult", include_adult_content())
-    data = tmdb.Discover().tv(**kwargs)
+    data = tmdbsimple.Discover().tv(**kwargs)
     for show in progress(*tmdb.get_shows(data)):
         add_show(show)
     handle_page(data, discover_shows, **kwargs)
@@ -270,7 +271,7 @@ def discover_shows(**kwargs):
 @query_arg("page", required=False)
 @handle_view
 def discover_people(**kwargs):
-    data = tmdb.People().popular(**kwargs)
+    data = tmdbsimple.People().popular(**kwargs)
     for person_li, person_id in tmdb.person_list_items(data):
         add_person(person_li, person_id)
     handle_page(data, discover_people, **kwargs)
@@ -304,7 +305,7 @@ def trending_movies(**kwargs):
 @handle_view
 def similar_movies(tmdb_id, **kwargs):
     setContent(plugin.handle, MOVIES_TYPE)
-    data = tmdb.Movies(tmdb_id).similar_movies(**kwargs)
+    data = tmdbsimple.Movies(tmdb_id).similar_movies(**kwargs)
     for movie in progress(*tmdb.get_movies(data)):
         add_movie(movie)
     handle_page(data, similar_movies, tmdb_id=tmdb_id, **kwargs)
@@ -317,7 +318,7 @@ def similar_movies(tmdb_id, **kwargs):
 def get_movies(call, **kwargs):
     setContent(plugin.handle, MOVIES_TYPE)
     logging.debug("Going to call tmdb.Movies().%s()", call)
-    data = getattr(tmdb.Movies(), call)(**kwargs)
+    data = getattr(tmdbsimple.Movies(), call)(**kwargs)
     for movie in progress(*tmdb.get_movies(data)):
         add_movie(movie)
     handle_page(data, get_movies, call=call, **kwargs)
@@ -351,7 +352,7 @@ def trending_shows(**kwargs):
 @handle_view
 def similar_shows(tmdb_id, **kwargs):
     setContent(plugin.handle, SHOWS_TYPE)
-    data = tmdb.TV(tmdb_id).similar(**kwargs)
+    data = tmdbsimple.TV(tmdb_id).similar(**kwargs)
     for show in progress(*tmdb.get_shows(data)):
         add_show(show)
     handle_page(data, similar_shows, tmdb_id=tmdb_id, **kwargs)
@@ -364,7 +365,7 @@ def similar_shows(tmdb_id, **kwargs):
 def get_shows(call, **kwargs):
     setContent(plugin.handle, SHOWS_TYPE)
     logging.debug("Going to call tmdb.TV().%s()", call)
-    data = getattr(tmdb.TV(), call)(**kwargs)
+    data = getattr(tmdbsimple.TV(), call)(**kwargs)
     for show in progress(*tmdb.get_shows(data)):
         add_show(show)
     handle_page(data, get_shows, call=call, **kwargs)
@@ -492,16 +493,16 @@ def handle_search(search_type, **kwargs):
     kwargs.setdefault("include_adult", include_adult_content())
     if search_type == 0:
         setContent(plugin.handle, MOVIES_TYPE)
-        data = tmdb.Search().movie(**kwargs)
+        data = tmdbsimple.Search().movie(**kwargs)
         for movie in progress(*tmdb.get_movies(data)):
             add_movie(movie)
     elif search_type == 1:
         setContent(plugin.handle, SHOWS_TYPE)
-        data = tmdb.Search().tv(**kwargs)
+        data = tmdbsimple.Search().tv(**kwargs)
         for show in progress(*tmdb.get_shows(data)):
             add_show(show)
     elif search_type == 2:
-        data = tmdb.Search().person(**kwargs)
+        data = tmdbsimple.Search().person(**kwargs)
         for person_li, person_id in tmdb.person_list_items(data):
             add_person(person_li, person_id)
     else:
@@ -544,19 +545,19 @@ def handle_season(show_id, season_number):
 @plugin.route("/play_trailer/<media_type>/<tmdb_id>/<season_number>/<episode_number>")
 def play_trailer(media_type, tmdb_id, season_number=None, episode_number=None, language=None, fallback_language="en"):
     if media_type == "movie":
-        tmdb_obj = tmdb.Movies(tmdb_id)
+        tmdb_obj = tmdbsimple.Movies(tmdb_id)
     elif media_type == "show":
-        tmdb_obj = tmdb.TV(tmdb_id)
+        tmdb_obj = tmdbsimple.TV(tmdb_id)
     elif media_type == "season":
         if season_number is None:
             logging.error("season_number attribute is required for seasons")
             return
-        tmdb_obj = tmdb.TVSeasons(tmdb_id, season_number)
+        tmdb_obj = tmdbsimple.TV_Seasons(tmdb_id, season_number)
     elif media_type == "episode":
         if season_number is None or episode_number is None:
             logging.error("both season_number and episode_number attributes are required for episodes")
             return
-        tmdb_obj = tmdb.TVEpisodes(tmdb_id, season_number, episode_number)
+        tmdb_obj = tmdbsimple.TV_Episodes(tmdb_id, season_number, episode_number)
     else:
         logging.error("Invalid media type '%s' used", media_type)
         return
