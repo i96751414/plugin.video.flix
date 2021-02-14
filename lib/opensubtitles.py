@@ -5,11 +5,15 @@ import struct
 from io import FileIO
 
 import requests
+from defusedxml.xmlrpc import monkey_patch
 
 try:
-    from xmlrpclib import ServerProxy, Transport
+    from xmlrpclib import ServerProxy, Transport  # nosec
 except ImportError:
-    from xmlrpc.client import ServerProxy, Transport
+    from xmlrpc.client import ServerProxy, Transport  # nosec
+
+# mitigate XML vulnerabilities - B411
+monkey_patch()
 
 
 class XMLRPCStruct(object):
