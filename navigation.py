@@ -1,6 +1,6 @@
 import os
 
-import dependencies  # noqa
+import dependencies  # noqa, pylint: disable=unused-import
 from lib.api.flix.kodi import ADDON_DATA
 from lib.navigation import run
 
