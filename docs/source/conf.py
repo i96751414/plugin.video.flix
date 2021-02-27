@@ -22,7 +22,7 @@ copyright = '2020, i96751414'
 author = 'i96751414'
 
 # The full version, including alpha/beta/rc tags
-release = '0.0.1'
+release = '0.0.11'
 
 # -- General configuration ---------------------------------------------------
 
@@ -36,7 +36,7 @@ extensions = [
 ]
 
 autodoc_member_order = 'bysource'
-autodoc_default_flags = ['members', 'show-inheritance']
+autodoc_default_options = {'members': True, 'show-inheritance': True}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
