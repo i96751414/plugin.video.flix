@@ -45,6 +45,7 @@ jobs:
       - name: Build docs
         uses: ammaraskar/sphinx-action@master
         with:
+          pre-build-command: python -m pip install -r requirements.txt
           docs-folder: "docs"
 
       - name: Upload docs

@@ -4,5 +4,5 @@ futures
 requests
 defusedxml
 tmdbsimple
-Kodistubs==18.0.0
+Kodistubs
 https://github.com/tamland/kodi-plugin-routing/tarball/master
