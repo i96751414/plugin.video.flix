@@ -74,6 +74,6 @@ html_theme_options = {
 html_static_path = ['_static']
 
 intersphinx_mapping = {
-    'https://docs.python.org/2.7': None,
+    'https://docs.python.org/3.7': None,
     'https://romanvm.github.io/Kodistubs': None,
 }
