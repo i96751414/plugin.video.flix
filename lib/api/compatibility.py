@@ -1,10 +1,10 @@
 import importlib
 import os
 import sys
+from xml.etree import ElementTree  # nosec
 
 import xbmc
 import xbmcaddon
-from defusedxml import ElementTree
 
 PY3 = sys.version_info.major >= 3
 
