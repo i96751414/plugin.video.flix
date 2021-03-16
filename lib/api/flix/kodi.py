@@ -457,6 +457,6 @@ def set_logger(name=None, level=logging.NOTSET):
     :rtype: logging.Logger
     """
     logger = logging.getLogger(name)
-    logger.addHandler(KodiLogHandler())
+    logger.handlers = [KodiLogHandler()]
     logger.setLevel(level)
     return logger
