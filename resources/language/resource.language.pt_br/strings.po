@@ -134,6 +134,10 @@ msgctxt "#30028"
 msgid "Show unaired episodes"
 msgstr "Mostrar episódios não emitidos"
 
+msgctxt "#30029"
+msgid "Save last chosen result"
+msgstr "Guardar o último resultado escolhido"
+
 # Navigation
 msgctxt "#30100"
 msgid "Discover"
@@ -322,3 +326,7 @@ msgstr "Séries similares"
 msgctxt "#30146"
 msgid "No providers available"
 msgstr "Sem provedores disponíveis"
+
+msgctxt "#30147"
+msgid "Do you want to use the previously chosen result?"
+msgstr "Deseja usar o resultado escolhido anteriormente?"

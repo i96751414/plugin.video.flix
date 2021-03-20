@@ -10,6 +10,7 @@
         <setting id="prefer_original_titles" type="bool" label="30004" default="true"/>
         <setting id="show_unaired_episodes" type="bool" label="30028" default="false"/>
         <setting id="auto_choose_media" type="bool" label="30013" default="false"/>
+        <setting id="save_last_result" type="bool" label="30029" default="true"/>
         <setting id="providers_timeout" type="slider" label="30006" option="int" range="10,1,60" default="30"/>
         <setting id="resolve_timeout" type="slider" label="30008" option="int" range="30,30,600" default="300"/>
         <setting id="scraper_threads" type="slider" label="30012" option="int" range="1,1,20" default="10"/>

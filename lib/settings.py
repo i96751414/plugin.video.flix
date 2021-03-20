@@ -58,6 +58,10 @@ def auto_choose_media():
     return get_boolean_setting("auto_choose_media")
 
 
+def save_last_result():
+    return get_boolean_setting("save_last_result")
+
+
 def get_library_path():
     return translatePath(get_setting("library_path"))
 

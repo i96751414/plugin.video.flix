@@ -66,6 +66,9 @@ import xbmcgui
 
 from .utils import assure_unicode, assure_str, PY3
 
+# Windows IDs - https://kodi.wiki/view/Window_IDs
+WINDOW_HOME = 10000
+
 ADDON = xbmcaddon.Addon()
 ADDON_NAME = ADDON.getAddonInfo("name")
 ADDON_ID = ADDON.getAddonInfo("id")
@@ -338,7 +341,7 @@ def update_library(database, path=None):
 
 def clean_library(database):
     """
-    This funtion will perform a number of 'cleanup' tasks on your video database and can be run
+    This function will perform a number of 'cleanup' tasks on your video database and can be run
     if you have moved, deleted or renamed files.
     Takes either "video" or "music" as a parameter to begin cleaning the corresponding database.
 
@@ -360,6 +363,30 @@ def close_busy_dialog():
     Close busy dialog window.
     """
     xbmc.executebuiltin("Dialog.Close(busydialog)")
+
+
+def set_property(key, value):
+    """
+    Set a property on the current Kodi instance.
+
+    :param key: The property key.
+    :type key: str
+    :param value: The property value.
+    :type value: str
+    """
+    xbmcgui.Window(WINDOW_HOME).setProperty(key, value)
+
+
+def get_property(key):
+    """
+    Get a property of the current Kodi instance.
+
+    :param key: The property key.
+    :type key: str
+    :return: The property value.
+    :rtype: str
+    """
+    return xbmcgui.Window(WINDOW_HOME).getProperty(key)
 
 
 class Busy(object):
