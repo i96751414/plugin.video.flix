@@ -27,11 +27,12 @@ class Storage(object):
         return (self.count(table_name, **kwargs) + page_size - 1) // page_size
 
     def delete(self, table_name, **kwargs):
-        self.execute_and_commit("DELETE FROM `{}`{}".format(table_name, self._where(kwargs)), kwargs.values())
+        where, values = self._where(kwargs)
+        self.execute_and_commit("DELETE FROM `{}`{}".format(table_name, where), values)
 
     def count(self, table_name, **kwargs):
-        return self.cursor.execute(
-            "SELECT COUNT(*) FROM `{}`{}".format(table_name, self._where(kwargs)), kwargs.values()).fetchone()[0]
+        where, values = self._where(kwargs)
+        return self.cursor.execute("SELECT COUNT(*) FROM `{}`{}".format(table_name, where), values).fetchone()[0]
 
     def fetch_batches(self, size, *args, **kwargs):
         result = self.execute(*args, **kwargs)
@@ -53,7 +54,14 @@ class Storage(object):
 
     @staticmethod
     def _where(kwargs):
-        return (" WHERE " + " AND ".join(["{} = ?".format(k) for k in kwargs])) if kwargs else ""
+        keys = tuple(kwargs)
+        if keys:
+            where = " WHERE " + " AND ".join(["{} = ?".format(k) for k in keys])
+            values = tuple(kwargs[k] for k in keys)
+        else:
+            where = ""
+            values = ()
+        return where, values
 
     def __enter__(self):
         return self
