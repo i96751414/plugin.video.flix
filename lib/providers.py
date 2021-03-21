@@ -94,7 +94,7 @@ def check_replay(func, sep=":"):
             last_id = path = None
 
         if last_id == current_id and Dialog().yesno(ADDON_NAME, translate(30147)):
-            setResolvedUrl(int(sys.argv[1]), True, ListItem(path=path))
+            setResolvedUrl(int(sys.argv[1]), True, item.to_list_item(path=path))
         else:
             path = func(item, *args, **kwargs)
             if path:
