@@ -78,12 +78,13 @@ def get_genres_by_name(genres_data):
 
 
 def get_cast(cast):
-    return [{"name": c["name"], "role": c["character"], "thumbnail": get_image(c, "profile_path", "w342"), "order": i}
+    return [{"name": c.get("name", "-"), "role": c["character"],
+             "thumbnail": get_image(c, "profile_path", "w342"), "order": i}
             for i, c in enumerate(cast, 1)]
 
 
 def get_cast_and_role(cast):
-    return [(c["name"], c["character"]) for c in cast]
+    return [(c.get("name", "-"), c["character"]) for c in cast]
 
 
 def get_directors(crew):
