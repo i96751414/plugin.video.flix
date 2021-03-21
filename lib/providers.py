@@ -7,7 +7,6 @@ from xbmcplugin import setResolvedUrl
 from lib.api.flix.kodi import ADDON_NAME, translate, notification, set_property, get_property
 # noinspection PyProtectedMember
 from lib.api.flix.provider import get_providers, send_to_providers, ProviderListener, ProviderResult
-from lib.api.flix.utils import args_rep
 from lib.dialog_select import dialog_select
 from lib.settings import get_providers_timeout, get_resolve_timeout, auto_choose_media, save_last_result
 from lib.tmdb import VideoItem, Movie, Show, Season
@@ -80,6 +79,33 @@ def get_providers_results(method, *args, **kwargs):
     return results
 
 
+def check_replay(func, sep=":"):
+    def wrapper(item, *args, **kwargs):
+        if not save_last_result():
+            return func(item, *args, **kwargs)
+
+        current_id = str(item)
+        key = "flix:last_played:" + item.__class__.__name__
+        value = get_property(key)
+
+        if value:
+            last_id, path = value.split(sep, 1)
+        else:
+            last_id = path = None
+
+        if last_id == current_id and Dialog().yesno(ADDON_NAME, translate(30147)):
+            setResolvedUrl(int(sys.argv[1]), True, ListItem(path=path))
+        else:
+            path = func(item, *args, **kwargs)
+            if path:
+                set_property(key, current_id + sep + path)
+
+        return path
+
+    return wrapper
+
+
+@check_replay
 def play(item, method, *args, **kwargs):
     try:
         results = get_providers_results(method, *args, **kwargs)
@@ -125,59 +151,29 @@ def play(item, method, *args, **kwargs):
     return path
 
 
-def check_replay(func, key=ADDON_NAME + ":last_played", sep=":"):
-    def wrapper(*args, **kwargs):
-        if not save_last_result():
-            return func(*args, **kwargs)
-
-        current_id = func.__name__ + args_rep(*args, **kwargs)
-        value = get_property(key)
-
-        if value:
-            last_id, path = value.split(sep, 1)
-        else:
-            last_id = path = None
-
-        if last_id == current_id and Dialog().yesno(ADDON_NAME, translate(30147)):
-            setResolvedUrl(int(sys.argv[1]), True, ListItem(path=path))
-        else:
-            path = func(*args, **kwargs)
-            if path:
-                set_property(key, current_id + sep + path)
-
-        return path
-
-    return wrapper
-
-
-@check_replay
 def play_search(query):
-    return play(VideoItem(title=query, art={"icon": "DefaultVideo.png"}), "search", query)
+    play(VideoItem(title=query, art={"icon": "DefaultVideo.png"}), "search", query)
 
 
-@check_replay
 def play_movie(movie_id):
     item = Movie(movie_id)
-    return play(item, "search_movie", movie_id, item.get_info("originaltitle"), item.alternative_titles,
-                year=item.get_info_as("year", int))
+    play(item, "search_movie", movie_id, item.get_info("originaltitle"), item.alternative_titles,
+         year=item.get_info_as("year", int))
 
 
-@check_replay
 def play_show(show_id):
     show = Show(show_id)
-    return play(show, "search_show", show_id, show.get_info("originaltitle"), show.alternative_titles,
-                year=show.get_info_as("year", int))
+    play(show, "search_show", show_id, show.get_info("originaltitle"), show.alternative_titles,
+         year=show.get_info_as("year", int))
 
 
-@check_replay
 def play_season(show_id, season_number):
     show = Show(show_id)
-    return play(Season(show_id, season_number), "search_season", show_id, show.get_info("originaltitle"),
-                int(season_number), show.alternative_titles)
+    play(Season(show_id, season_number), "search_season", show_id, show.get_info("originaltitle"),
+         int(season_number), show.alternative_titles)
 
 
-@check_replay
 def play_episode(show_id, season_number, episode_number):
     show = Show(show_id)
-    return play(Season(show_id, season_number).get_episode(episode_number), "search_episode", show_id,
-                show.get_info("originaltitle"), int(season_number), int(episode_number), show.alternative_titles)
+    play(Season(show_id, season_number).get_episode(episode_number), "search_episode", show_id,
+         show.get_info("originaltitle"), int(season_number), int(episode_number), show.alternative_titles)

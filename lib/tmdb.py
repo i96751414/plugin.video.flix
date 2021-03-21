@@ -133,6 +133,9 @@ class VideoItem(object):
     def get_art(self, key):
         return self._art[key]
 
+    def __str__(self):
+        return "{}(title={})".format(self.__class__.__name__, self._title)
+
 
 class MovieItem(VideoItem):
     def __init__(self, movie_id, **kwargs):
@@ -142,6 +145,9 @@ class MovieItem(VideoItem):
     @property
     def movie_id(self):
         return self._movie_id
+
+    def __str__(self):
+        return "{}(id={})".format(self.__class__.__name__, self._movie_id)
 
 
 class Movie(MovieItem):
@@ -211,6 +217,9 @@ class ShowItem(VideoItem):
     @property
     def show_id(self):
         return self._show_id
+
+    def __str__(self):
+        return "{}(id={})".format(self.__class__.__name__, self._show_id)
 
 
 class Show(ShowItem):
@@ -317,6 +326,10 @@ class SeasonItem(ShowItem):
     def season_number(self):
         return self._season_number
 
+    def __str__(self):
+        return "{}(id={}, season={})".format(
+            self.__class__.__name__, self._show_id, self._season_number)
+
 
 class Season(SeasonItem):
     def __init__(self, show_id, season_number):
@@ -374,6 +387,10 @@ class EpisodeItem(SeasonItem):
     @property
     def episode_number(self):
         return self._episode_number
+
+    def __str__(self):
+        return "{}(id={}, season={}, episode={})".format(
+            self.__class__.__name__, self._show_id, self._season_number, self._episode_number)
 
 
 def person_list_items(data):

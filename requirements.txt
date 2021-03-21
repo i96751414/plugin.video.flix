@@ -2,7 +2,6 @@ flake8
 # sphinx
 futures
 requests
-defusedxml
 tmdbsimple
 Kodistubs
 https://github.com/tamland/kodi-plugin-routing/tarball/master
