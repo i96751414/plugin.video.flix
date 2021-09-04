@@ -146,7 +146,7 @@ class Provider(object):
         :type tmdb_id: str
         :param title: The movie title.
         :type title: str
-        :param titles: Dictionary containing key-pairs of country and title, respectively.
+        :param titles: Dictionary containing key-pairs of country (ISO-3166-1 lowercase) and title, respectively.
         :type titles: dict[str, str]
         :param year: The movie release year. This is optional, as some movies don't have a release date attribute.
         :type year: int, optional
@@ -163,7 +163,7 @@ class Provider(object):
         :type tmdb_id: str
         :param show_title: The show title.
         :type show_title: str
-        :param titles: Dictionary containing key-pairs of country and title, respectively.
+        :param titles: Dictionary containing key-pairs of country (ISO-3166-1 lowercase) and title, respectively.
         :type titles: dict[str, str]
         :param year: The show first air year. This is optional, as some shows don't have this attribute.
         :type year: int, optional
@@ -182,7 +182,7 @@ class Provider(object):
         :type show_title: str
         :param season_number: The season number.
         :type season_number: int
-        :param titles: Dictionary containing key-pairs of country and title, respectively.
+        :param titles: Dictionary containing key-pairs of country (ISO-3166-1 lowercase) and title, respectively.
         :type titles: dict[str, str]
         :return: List of search results.
         :rtype: list[ProviderResult]
@@ -201,7 +201,7 @@ class Provider(object):
         :type season_number: int
         :param episode_number: The episode number.
         :type episode_number: int
-        :param titles: Dictionary containing key-pairs of country and title, respectively.
+        :param titles: Dictionary containing key-pairs of country (ISO-3166-1 lowercase) and title, respectively.
         :type titles: dict[str, str]
         :return: List of search results.
         :rtype: list[ProviderResult]

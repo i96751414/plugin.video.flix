@@ -158,11 +158,10 @@ class Movie(MovieItem):
         self._alternative_titles = {
             t["iso_3166_1"].lower(): t["title"] for t in self._data.get("alternative_titles", {}).get("titles", [])
         }
+        self._alternative_titles["auto"] = title = self._data["title"] or self._data["original_title"]
 
         if prefer_original_titles():
             title = self._data["original_title"]
-        else:
-            title = self._data["title"] or self._data["original_title"]
 
         # genres_dict = get_genres_by_id(Genres().movie_list(language=get_language()))
         premiered = self._data.get("release_date", "")
@@ -230,11 +229,10 @@ class Show(ShowItem):
         self._alternative_titles = {
             t["iso_3166_1"].lower(): t["title"] for t in self._data.get("alternative_titles", {}).get("results", [])
         }
+        self._alternative_titles["auto"] = title = self._data["title"] or self._data["original_title"]
 
         if prefer_original_titles():
             title = self._data["original_name"]
-        else:
-            title = self._data["name"] or self._data["original_name"]
 
         # genres_dict = get_genres_by_id(Genres().tv_list(language=get_language()))
 
