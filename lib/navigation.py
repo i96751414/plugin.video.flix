@@ -138,7 +138,11 @@ def add_season(season):
     ])
     addDirectoryItem(
         plugin.handle,
-        plugin.url_for(handle_season, season.show_id, season.season_number),
+        plugin.url_for(
+            handle_season,
+            show_id=season.show_id,
+            season_number=season.season_number,
+            show_title=season.get_info("tvshowtitle")),
         item,
         isFolder=True,
     )
@@ -533,9 +537,10 @@ def handle_show(show_id):
 
 
 @plugin.route("/handle_season/<show_id>/<season_number>")
-def handle_season(show_id, season_number):
+@query_arg("show_title", required=False)
+def handle_season(show_id, season_number, show_title=None):
     setContent(plugin.handle, EPISODES_TYPE)
-    for episode in tmdb.Season(show_id, season_number).episodes(get_unaired=show_unaired_episodes()):
+    for episode in tmdb.Season(show_id, season_number, show_title).episodes(get_unaired=show_unaired_episodes()):
         add_episode(episode)
     endOfDirectory(plugin.handle)
 

@@ -3,6 +3,7 @@ import io
 import logging
 import os
 import sys
+import unicodedata
 from datetime import timedelta
 
 import requests
@@ -35,6 +36,10 @@ def get_from_params(params, key, **kwargs):
     if "default" in kwargs:
         return kwargs["default"]
     raise AttributeError("No attribute '{}' provided")
+
+
+def normalize_string(s):
+    return unicodedata.normalize("NFKD", s)
 
 
 class SubtitlesService(object):
@@ -83,7 +88,7 @@ class SubtitlesService(object):
             if os.path.isfile(path):
                 payload.append(SearchPayload(query=os.path.splitext(os.path.basename(path))[0]))
             # Search with info labels
-            tv_show_title = xbmc.getInfoLabel("VideoPlayer.TVshowtitle")
+            tv_show_title = normalize_string(xbmc.getInfoLabel("VideoPlayer.TVshowtitle"))
             imdb_number = xbmc.getInfoLabel("VideoPlayer.IMDBNumber")
             if tv_show_title:
                 # Assuming its a tv show
@@ -96,9 +101,14 @@ class SubtitlesService(object):
                         payload.append(SearchPayload(imdb_id=imdb_number[2:], season=season, episode=episode))
             else:
                 # Assuming its a movie
-                title = xbmc.getInfoLabel("VideoPlayer.OriginalTitle") or xbmc.getInfoLabel("VideoPlayer.Title")
+                title = normalize_string(
+                    xbmc.getInfoLabel("VideoPlayer.OriginalTitle") or xbmc.getInfoLabel("VideoPlayer.Title"))
                 year = xbmc.getInfoLabel("VideoPlayer.Year")
-                payload.append(SearchPayload(query=(title + " " + year) if year else title))
+                if not year:
+                    title, year = xbmc.getCleanMovieTitle(title)
+                if year:
+                    payload.append(SearchPayload(query=title + " " + year))
+                payload.append(SearchPayload(query=title))
                 if imdb_number:
                     payload.append(SearchPayload(imdb_id=imdb_number[2:]))
         else:

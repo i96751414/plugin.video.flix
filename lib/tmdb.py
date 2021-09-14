@@ -225,11 +225,12 @@ class ShowItem(VideoItem):
 class Show(ShowItem):
     def __init__(self, show_id):
         self._data = tmdbsimple.TV(show_id).info(
-            language=get_language(), append_to_response="credits,alternative_titles")
+            language=get_language(), append_to_response="credits,alternative_titles,external_ids")
         self._alternative_titles = {
             t["iso_3166_1"].lower(): t["title"] for t in self._data.get("alternative_titles", {}).get("results", [])
         }
-        self._alternative_titles["auto"] = title = self._data["title"] or self._data["original_title"]
+        self._alternative_titles["auto"] = title = self._data["name"] or self._data["original_name"]
+        self._external_ids = self._data.get("external_ids", {})
 
         if prefer_original_titles():
             title = self._data["original_name"]
@@ -258,14 +259,12 @@ class Show(ShowItem):
             "trailer": "plugin://{}/play_trailer/show/{}".format(ADDON_ID, self._data["id"]),
             "mediatype": "tvshow",
             "genre": [g["name"] for g in self._data.get("genres", [])],
-            "imdbnumber": self._data.get("imdb_id"),
-            "code": self._data.get("imdb_id"),
+            "imdbnumber": self._external_ids.get("imdb_id"),
+            "code": self._external_ids.get("imdb_id"),
             "castandrole": get_cast_and_role(cast),
             "director": get_directors(crew),
             "writer": get_writers(crew),
             "studio": [s["name"] for s in self._data.get("production_companies", [])],
-            "season": self._data.get("number_of_seasons"),
-            "episode": self._data.get("number_of_episodes"),
         }
 
         icon = get_image(self._data, "poster_path", "w780")
@@ -297,11 +296,9 @@ class Show(ShowItem):
                 "title": season_title,
                 "trailer": "plugin://{}/play_trailer/season/{}/{}".format(
                     ADDON_ID, self._show_id, season_number),
-                "tvshowtitle": self._title,
                 "premiered": premiered,
                 "year": premiered.split("-")[0] if premiered else "",
-                "season": 1,
-                "episode": season.get("episode_count"),
+                "season": season_number
             })
 
             overview = season.get("overview")
@@ -331,10 +328,11 @@ class SeasonItem(ShowItem):
 
 
 class Season(SeasonItem):
-    def __init__(self, show_id, season_number):
+    def __init__(self, show_id, season_number, show_title=None):
         self._data = tmdbsimple.TV_Seasons(show_id, season_number).info(
             language=get_language(), append_to_response="credits")
         self._credits = self._data.get("credits", {})
+        self._show_title = show_title
         # TODO: parse data - to_list_item is useless atm
         super(Season, self).__init__(show_id, season_number)
 
@@ -345,9 +343,10 @@ class Season(SeasonItem):
         cast = self._credits.get("cast", []) + episode.get("guest_stars", [])
         info = {
             "title": title,
+            "tvshowtitle": self._show_title,
             "aired": episode.get("air_date"),
-            "season": episode.get("season_number"),
-            "episode": episode.get("episode_number"),
+            "season": self._season_number,
+            "episode": episode_number,
             "code": episode.get("production_code"),
             "plot": episode.get("overview"),
             "rating": episode.get("vote_average"),
