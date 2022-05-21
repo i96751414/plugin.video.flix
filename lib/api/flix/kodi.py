@@ -66,25 +66,29 @@ import xbmcgui
 
 from .utils import assure_unicode, assure_str, PY3
 
-# Windows IDs - https://kodi.wiki/view/Window_IDs
-WINDOW_HOME = 10000
-
 ADDON = xbmcaddon.Addon()
+if PY3:
+    from xbmcvfs import translatePath
+
+    translate = ADDON.getLocalizedString
+else:
+    from xbmc import translatePath
+
+    def translate(*args, **kwargs):
+        return ADDON.getLocalizedString(*args, **kwargs).encode("utf-8")
+
 ADDON_NAME = ADDON.getAddonInfo("name")
 ADDON_ID = ADDON.getAddonInfo("id")
 ADDON_PATH = assure_unicode(ADDON.getAddonInfo("path"))
 ADDON_ICON = assure_unicode(ADDON.getAddonInfo("icon"))
-ADDON_DATA = assure_unicode(xbmc.translatePath(ADDON.getAddonInfo("profile")))
+ADDON_DATA = assure_unicode(translatePath(ADDON.getAddonInfo("profile")))
 
 set_setting = ADDON.setSetting
 get_setting = ADDON.getSetting
 open_settings = ADDON.openSettings
 
-if PY3:
-    translate = ADDON.getLocalizedString
-else:
-    def translate(*args, **kwargs):
-        return ADDON.getLocalizedString(*args, **kwargs).encode("utf-8")
+# Windows IDs - https://kodi.wiki/view/Window_IDs
+WINDOW_HOME = 10000
 
 iso_639_1_languages = {
     "Chinese": "zh", "English": "en", "French": "fr", "Hindi": "hi", "Mongolian": "mn",

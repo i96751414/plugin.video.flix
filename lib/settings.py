@@ -1,6 +1,5 @@
-from xbmc import translatePath
-
-from lib.api.flix.kodi import get_boolean_setting, get_int_setting, get_setting, get_language_iso_639_1, set_any_setting
+from lib.api.flix.kodi import get_boolean_setting, get_int_setting, get_setting, \
+    get_language_iso_639_1, set_any_setting, translatePath
 
 
 def is_cache_enabled():
