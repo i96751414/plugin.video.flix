@@ -13,7 +13,7 @@ import xbmcplugin
 from cached import memory_cached
 
 from lib.api.flix.kodi import ADDON_ID, ADDON_DATA, get_language_iso_639_1, convert_language_iso_639_2
-from lib.api.flix.utils import assure_str
+from lib.api.flix.utils import assure_str, assure_unicode
 from lib.opensubtitles import OpenSubtitles, SearchPayload
 from lib.settings import get_os_username, get_os_password, get_os_folder
 
@@ -39,7 +39,7 @@ def get_from_params(params, key, **kwargs):
 
 
 def normalize_string(s):
-    return unicodedata.normalize("NFKD", s)
+    return unicodedata.normalize("NFKD", assure_unicode(s))
 
 
 class SubtitlesService(object):

@@ -23,9 +23,9 @@
         <summary lang="en">Flix - A movie scraper for Kodi</summary>
         <description lang="en">Flix is a movie scraper which allows for custom providers.</description>
         <news>
-            - Provide an auto title on additional titles
-            - Improve subtitles finding
-            - Add support to Kodi 20
+- Provide an auto title on additional titles
+- Improve subtitles finding
+- Add support to Kodi 20
         </news>
         <assets>
             <icon>icon.png</icon>
