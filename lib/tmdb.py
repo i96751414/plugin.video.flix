@@ -7,7 +7,7 @@ from cached import Cache
 
 from lib.api.flix.kodi import ADDON_ID
 from lib.api.flix.utils import get_data
-from lib.settings import is_cache_enabled, prefer_original_titles, get_language, get_scraper_thrads, \
+from lib.settings import is_cache_enabled, prefer_original_titles, get_language, get_scraper_threads, \
     get_cache_expiration_days
 
 IMAGE_BASE_URL = "https://image.tmdb.org/t/p/"
@@ -427,12 +427,12 @@ def get_person_credits(person_id, cast=True, crew=False):
 
 def get_movies(data):
     ids = get_ids(data)
-    return get_data(Movie, ids, threads=get_scraper_thrads(), yield_exceptions=False), len(ids)
+    return get_data(Movie, ids, threads=get_scraper_threads(), yield_exceptions=False), len(ids)
 
 
 def get_shows(data):
     ids = get_ids(data)
-    return get_data(Show, ids, threads=get_scraper_thrads(), yield_exceptions=False), len(ids)
+    return get_data(Show, ids, threads=get_scraper_threads(), yield_exceptions=False), len(ids)
 
 
 def get_credits_media(credits_entry):
@@ -442,5 +442,5 @@ def get_credits_media(credits_entry):
 
 def get_person_media(person_id):
     credits_list = get_person_credits(person_id)
-    return (get_data(get_credits_media, credits_list, threads=get_scraper_thrads(), yield_exceptions=False),
+    return (get_data(get_credits_media, credits_list, threads=get_scraper_threads(), yield_exceptions=False),
             len(credits_list))

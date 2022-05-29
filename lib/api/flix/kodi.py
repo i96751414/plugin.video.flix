@@ -55,6 +55,15 @@ Module `kodi` provides Kodi utilities.
     :return: Localized string.
     :rtype: str
 
+.. function:: translate_path(path)
+
+    Translates the provided path.
+
+    :param path: path to translate.
+    :type path: str
+    :return: Translated path.
+    :rtype: str
+
 """
 
 import json
@@ -77,11 +86,12 @@ else:
     def translate(*args, **kwargs):
         return ADDON.getLocalizedString(*args, **kwargs).encode("utf-8")
 
+translate_path = translatePath
 ADDON_NAME = ADDON.getAddonInfo("name")
 ADDON_ID = ADDON.getAddonInfo("id")
 ADDON_PATH = assure_unicode(ADDON.getAddonInfo("path"))
 ADDON_ICON = assure_unicode(ADDON.getAddonInfo("icon"))
-ADDON_DATA = assure_unicode(translatePath(ADDON.getAddonInfo("profile")))
+ADDON_DATA = assure_unicode(translate_path(ADDON.getAddonInfo("profile")))
 
 set_setting = ADDON.setSetting
 get_setting = ADDON.getSetting

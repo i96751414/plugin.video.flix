@@ -1,5 +1,5 @@
 from lib.api.flix.kodi import get_boolean_setting, get_int_setting, get_setting, \
-    get_language_iso_639_1, set_any_setting, translatePath
+    get_language_iso_639_1, set_any_setting, translate_path
 
 
 def is_cache_enabled():
@@ -46,10 +46,10 @@ def get_os_password():
 
 
 def get_os_folder():
-    return translatePath(get_setting("os_folder"))
+    return translate_path(get_setting("os_folder"))
 
 
-def get_scraper_thrads():
+def get_scraper_threads():
     return get_int_setting("scraper_threads")
 
 
@@ -62,7 +62,7 @@ def save_last_result():
 
 
 def get_library_path():
-    return translatePath(get_setting("library_path"))
+    return translate_path(get_setting("library_path"))
 
 
 def add_unaired_episodes():
