@@ -446,12 +446,16 @@ class Progress(object):
     def __iter__(self):
         if self._dialog is not None:
             raise ValueError("dialog already created")
+
         self._dialog = self._impl()
         self._dialog.create(**self._kwargs)
-        for i, obj in enumerate(self._iterable):
-            self._dialog.update(int(self._percent_offset + self._percent_range * (i + 1) / self._length))
-            yield obj
-        self.close()
+
+        try:
+            for i, obj in enumerate(self._iterable):
+                self._dialog.update(int(self._percent_offset + self._percent_range * (i + 1) / self._length))
+                yield obj
+        finally:
+            self.close()
 
     def __del__(self):
         self.close()
