@@ -165,7 +165,8 @@ def play_youtube_video(video_id):
 @plugin.route("/")
 def index():
     if "action" in plugin.args:
-        SubtitlesService(handle=plugin.handle, params=plugin.args).run()
+        with SubtitlesService(handle=plugin.handle, params=plugin.args) as s:
+            s.run()
         return
 
     addDirectoryItem(plugin.handle, plugin.url_for(discover), li(30100, "discover.png"), isFolder=True)

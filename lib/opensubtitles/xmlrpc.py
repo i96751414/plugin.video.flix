@@ -5,32 +5,11 @@ try:
 except ImportError:
     from xmlrpc.client import ServerProxy, Transport  # nosec
 
+from lib.opensubtitles.utils import DataStruct
 
-class XMLRPCStruct(object):
-    @classmethod
-    def from_data(cls, data):
-        obj = cls()
-        obj.__dict__.update(data)
-        return obj
 
-    @staticmethod
-    def attr(attribute):
-        def setter(self, value):
-            self.__dict__[attribute] = value
-
-        def getter(self):
-            return self.__dict__.get(attribute)
-
-        return property(getter, setter)
-
-    def __init__(self, **kwargs):
-        for k, v in kwargs.items():
-            if not hasattr(self, k):
-                raise AttributeError("No such attribute '{}'".format(k))
-            self.__setattr__(k, v)
-
-    def __repr__(self):
-        return str(self.__dict__)
+class XMLRPCStruct(DataStruct):
+    pass
 
 
 class SearchPayload(XMLRPCStruct):
@@ -161,7 +140,9 @@ class OpenSubtitles(object):
         """
         Perform logout.
         """
-        self._request("LogOut", self._token)
+        if self._token is not None:
+            self._request("LogOut", self._token)
+            self._token = None
 
     def search_subtitles(self, payload):
         """

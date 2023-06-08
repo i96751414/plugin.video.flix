@@ -89,6 +89,7 @@ else:
 translate_path = translatePath
 ADDON_NAME = ADDON.getAddonInfo("name")
 ADDON_ID = ADDON.getAddonInfo("id")
+ADDON_VERSION = ADDON.getAddonInfo("version")
 ADDON_PATH = assure_unicode(ADDON.getAddonInfo("path"))
 ADDON_ICON = assure_unicode(ADDON.getAddonInfo("icon"))
 ADDON_DATA = assure_unicode(translate_path(ADDON.getAddonInfo("profile")))
@@ -103,9 +104,6 @@ WINDOW_HOME = 10000
 iso_639_1_languages = {
     "Chinese": "zh", "English": "en", "French": "fr", "Hindi": "hi", "Mongolian": "mn",
     "Persian": "fa", "Portuguese": "pt", "Serbian": "sr", "Spanish": "es", "Tamil": "ta",
-}
-iso_639_2_languages = {
-    "Portuguese (Brazil)": "pob", "Greek": "ell",
 }
 
 
@@ -126,18 +124,6 @@ def get_language_iso_639_1(default="en", region=False):
                 break
         else:
             language = default
-
-    return language
-
-
-def convert_language_iso_639_2(name):
-    """
-    Returns the given language converted to the ISO 639-2 format as a string.
-    """
-    try:
-        language = iso_639_2_languages[name]
-    except KeyError:
-        language = xbmc.convertLanguage(name, xbmc.ISO_639_2)
 
     return language
 

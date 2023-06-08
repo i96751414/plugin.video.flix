@@ -1,21 +1,19 @@
-import gzip
-import io
 import logging
 import os
 import sys
-import unicodedata
 from datetime import timedelta
 
 import requests
+import unicodedata
 import xbmc
 import xbmcgui
 import xbmcplugin
 from cached import memory_cached
 
-from lib.api.flix.kodi import ADDON_ID, ADDON_DATA, get_language_iso_639_1, convert_language_iso_639_2
-from lib.api.flix.utils import assure_str, assure_unicode
+from lib.api.flix.kodi import ADDON_ID, ADDON_DATA, ADDON_VERSION
+from lib.api.flix.utils import assure_unicode
+from lib.opensubtitles.rest import OpenSubtitles, SearchPayload, DownloadRequest
 from lib.opensubtitles.utils import calculate_hash
-from lib.opensubtitles.xmlrpc import OpenSubtitles, SearchPayload
 from lib.settings import get_os_username, get_os_password, get_os_folder
 
 try:
@@ -43,6 +41,32 @@ def normalize_string(s):
     return unicodedata.normalize("NFKD", assure_unicode(s))
 
 
+def get_language_code(language_mame):
+    logging.debug("Converting language '%s' to code", language_mame)
+    for prefix, code in (("English", "en"), ("French", "fr"), ("Spanish", "es")):
+        if language_mame.startswith(prefix):
+            return code
+
+    try:
+        return {
+            "Chinese": "zh-cn",
+            "Chinese (Simple)": "zh-cn",
+            "Chinese (Traditional)": "zh-tw",
+            "Portuguese": "pt-pt",
+            "Portuguese (Brazil)": "pt-br",
+        }[language_mame]
+    except KeyError:
+        return xbmc.convertLanguage(language_mame, xbmc.ISO_639_1)
+
+
+def get_language_flag(language):
+    language = language.lower()
+    try:
+        return {"pt-pt": "pt", "pt-br": "pb"}[language]
+    except KeyError:
+        return language.split("-", maxsplit=1)[0]
+
+
 class SubtitlesService(object):
     def __init__(self, handle=None, params=None):
         self._subtitles_dir = get_os_folder()
@@ -53,53 +77,64 @@ class SubtitlesService(object):
 
         self._handle = handle or int(sys.argv[1])
         self._params = params or parse_qs(sys.argv[2].lstrip("?"))
-        self._api = OpenSubtitles(language=get_language_iso_639_1(), user_agent="XBMC_Subtitles_Login_v5.0.16")
+        self._api = OpenSubtitles(ADDON_ID, ADDON_VERSION)
         self._api.login(get_os_username(), get_os_password())
 
     def _add_result(self, result):
-        list_item = xbmcgui.ListItem(label=result.language_name, label2=result.sub_file_name)
-        list_item.setArt({"icon": str(int(round(float(result.sub_rating) / 2))), "thumb": result.iso_639})
-        list_item.setProperty("sync", "true" if result.matched_by == "moviehash" else "false")
-        list_item.setProperty("hearing_imp", "true" if result.sub_hearing_impaired == "1" else "false")
+        list_item = xbmcgui.ListItem(label=result.language, label2=result.release)
+        list_item.setArt({
+            "icon": str(int(round(float(result.ratings) / 2))),
+            "thumb": get_language_flag(result.language),
+        })
+        list_item.setProperty("sync", "true" if result.moviehash_match else "false")
+        list_item.setProperty("hearing_imp", "true" if result.hearing_impaired else "false")
 
         url = "plugin://{}/?{}".format(ADDON_ID, urlencode(dict(
-            action="download", name=assure_str(result.sub_file_name), url=result.sub_download_link)))
+            action="download", file_id=result.files[0].file_id)))
 
         xbmcplugin.addDirectoryItem(self._handle, url, list_item)
 
     def _get_query_languages(self):
-        return ",".join([convert_language_iso_639_2(language) for language in self._get_param("languages").split(",")])
+        return [get_language_code(language) for language in self._get_param("languages").split(",")]
 
-    def _get_param(self, key):
-        return get_from_params(self._params, key)
+    def _get_preferred_language(self):
+        return get_language_code(self._get_param("preferredlanguage", default=None))
+
+    def _get_param(self, key, **kwargs):
+        return get_from_params(self._params, key, **kwargs)
 
     @memory_cached(timedelta(minutes=30), instance_method=True)
     def _search_subtitles(self, payload):
         return self._api.search_subtitles(payload)
 
-    def search(self, languages, search_string=None):
-        path = xbmc.Player().getPlayingFile()
+    def search(self, languages, search_string=None, preferred_language=None):
+        logging.debug("Searching subtitle for languages %s and preferred language %s", languages, preferred_language)
         if search_string is None:
-            payload = []
-            # Start by searching by hash
+            path = xbmc.Player().getPlayingFile()
+            payload = SearchPayload()
+
+            # Search by hash
             file_hash = calculate_hash(path)
             if file_hash:
-                payload.append(SearchPayload(hash=file_hash))
+                payload.hash = file_hash
+
             # Search by file name
-            if os.path.isfile(path):
-                payload.append(SearchPayload(query=os.path.splitext(os.path.basename(path))[0]))
+            # if os.path.isfile(path):
+            #    payload.query = os.path.splitext(os.path.basename(path))[0]
+
             # Search with info labels
             tv_show_title = normalize_string(xbmc.getInfoLabel("VideoPlayer.TVshowtitle"))
             imdb_number = xbmc.getInfoLabel("VideoPlayer.IMDBNumber")
             if tv_show_title:
                 # Assuming its a tv show
+                payload.query = tv_show_title
                 season = xbmc.getInfoLabel("VideoPlayer.Season")
                 episode = xbmc.getInfoLabel("VideoPlayer.Episode")
                 if episode and season:
-                    payload.append(SearchPayload(query="{} S{:0>2}E{:0>2}".format(tv_show_title, season, episode)))
-                    payload.append(SearchPayload(query=tv_show_title, season=season, episode=episode))
-                    if imdb_number:
-                        payload.append(SearchPayload(imdb_id=imdb_number[2:], season=season, episode=episode))
+                    payload.season = season
+                    payload.episode = episode
+                    if imdb_number and imdb_number[2:].isdigit():
+                        payload.imdb_id = int(imdb_number[2:])
             else:
                 # Assuming its a movie
                 title = normalize_string(
@@ -107,43 +142,49 @@ class SubtitlesService(object):
                 year = xbmc.getInfoLabel("VideoPlayer.Year")
                 if not year:
                     title, year = xbmc.getCleanMovieTitle(title)
-                if year:
-                    payload.append(SearchPayload(query=title + " " + year))
-                payload.append(SearchPayload(query=title))
-                if imdb_number:
-                    payload.append(SearchPayload(imdb_id=imdb_number[2:]))
+                if year and year.isdigit():
+                    payload.year = int(year)
+                payload.query = title
+                if imdb_number and imdb_number[2:].isdigit():
+                    payload.imdb_id = int(imdb_number[2:])
         else:
-            payload = [SearchPayload(query=search_string)]
+            payload = SearchPayload(query=search_string)
 
-        for search_payload in payload:
-            search_payload.languages = languages
-
-        logging.debug("Search payload: %s", payload)
+        payload.languages = ",".join(languages)
+        logging.debug("Search payload: %s", payload.__dict__)
         results = self._search_subtitles(payload)
+        results.sort(
+            key=lambda r: (r.moviehash_match, r.ratings, r.language.lower() == preferred_language), reverse=True)
+
         for result in results:
             try:
                 self._add_result(result)
             except Exception as e:
                 logging.error(e, exc_info=True)
 
-    def download(self, name, url):
-        path = os.path.join(self._subtitles_dir, name)
-        content = gzip.GzipFile(fileobj=io.BytesIO(requests.get(url).content)).read()
-        with open(path, "wb") as f:
-            f.write(content)
+    def download(self, file_id):
+        result = self._api.download_subtitle(DownloadRequest(file_id=file_id))
+        path = os.path.join(self._subtitles_dir, result.file_name)
 
-        xbmcplugin.addDirectoryItem(self._handle, path, xbmcgui.ListItem(label=name))
+        r = requests.get(result.link)
+        r.raise_for_status()
+        with open(path, "wb") as f:
+            f.write(r.content)
+
+        xbmcplugin.addDirectoryItem(self._handle, path, xbmcgui.ListItem(label=result.file_name))
 
     def run(self):
         succeeded = True
         try:
             action = self._get_param("action")
             if action == "search":
-                self.search(self._get_query_languages())
+                self.search(self._get_query_languages(), preferred_language=self._get_preferred_language())
             elif action == "manualsearch":
-                self.search(self._get_query_languages(), self._get_param("searchstring"))
+                self.search(
+                    self._get_query_languages(), self._get_param("searchstring"),
+                    preferred_language=self._get_preferred_language())
             elif action == "download":
-                self.download(self._get_param("name"), self._get_param("url"))
+                self.download(int(self._get_param("file_id")))
             else:
                 succeeded = False
                 logging.error("Unknown action '%s'", action)
@@ -152,3 +193,10 @@ class SubtitlesService(object):
             succeeded = False
 
         xbmcplugin.endOfDirectory(self._handle, succeeded)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self._api.logout()
+        return False
