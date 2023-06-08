@@ -14,7 +14,8 @@ from cached import memory_cached
 
 from lib.api.flix.kodi import ADDON_ID, ADDON_DATA, get_language_iso_639_1, convert_language_iso_639_2
 from lib.api.flix.utils import assure_str, assure_unicode
-from lib.opensubtitles import OpenSubtitles, SearchPayload
+from lib.opensubtitles.utils import calculate_hash
+from lib.opensubtitles.xmlrpc import OpenSubtitles, SearchPayload
 from lib.settings import get_os_username, get_os_password, get_os_folder
 
 try:
@@ -81,7 +82,7 @@ class SubtitlesService(object):
         if search_string is None:
             payload = []
             # Start by searching by hash
-            file_hash = OpenSubtitles.calculate_hash(path)
+            file_hash = calculate_hash(path)
             if file_hash:
                 payload.append(SearchPayload(hash=file_hash))
             # Search by file name
