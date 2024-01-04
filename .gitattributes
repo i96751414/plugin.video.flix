@@ -1,6 +1,7 @@
 .gitattributes export-ignore
 .gitignore export-ignore
 .github export-ignore
+.readthedocs.yaml export-ignore
 docs export-ignore
 requirements.txt export-ignore
 setup.cfg export-ignore
