@@ -24,25 +24,27 @@ class DataStruct(object):
                 value = data.get(attribute, obj)
                 if value is not obj:
                     if attribute_type is not None and not (kwargs.get("nullable") and value is None):
-                        value = cls._convert(attribute, attribute_type, value, strict)
+                        value = cls._convert_from_data(attribute, attribute_type, value, strict)
                     obj.__setattr__(attribute, value)
                 else:
                     default = kwargs.get("default", obj)
                     if default is not obj:
                         obj.__setattr__(attribute, default)
+                    else:
+                        raise ValueError("No value for attribute {}".format(attribute))
         else:
             obj.__dict__.update(data)
 
         return obj
 
     @classmethod
-    def _convert(cls, attribute, attribute_type, value, strict=False):
+    def _convert_from_data(cls, attribute, attribute_type, value, strict=False):
         if isinstance(attribute_type, cls.ARRAY_TYPES):
             if not isinstance(value, cls.ARRAY_TYPES):
                 raise ValueError(
                     "Unexpected value type for attribute '{}'. Received {} but expecting [{}]".format(
                         attribute, value.__class__, attribute_type[0]))
-            value = [cls._convert("{}[...]".format(attribute), attribute_type[0], v, strict) for v in value]
+            value = [cls._convert_from_data("{}[...]".format(attribute), attribute_type[0], v, strict) for v in value]
         elif issubclass(attribute_type, DataStruct) and isinstance(value, dict):
             value = attribute_type.from_data(value, strict=strict)
         elif not isinstance(value, attribute_type):
@@ -53,15 +55,12 @@ class DataStruct(object):
 
     @classmethod
     def attr(cls, attribute, clazz=None, **kwargs):
+        if clazz:
+            cls._validate_class_type(attribute, clazz)
+
         def setter(self, value):
             if clazz and not (kwargs.get("nullable") and value is None):
-                if isinstance(clazz, cls.ARRAY_TYPES):
-                    if len(clazz) != 1 or type(clazz[0]) is not type:
-                        raise TypeError("Type definition for arrays must be a list/tuple of size 1")
-                    if not (isinstance(value, cls.ARRAY_TYPES) and all([isinstance(v, clazz[0]) for v in value])):
-                        raise TypeError("Expecting a [{}] type for '{}' attribute".format(clazz[0], attribute))
-                elif not isinstance(value, clazz):
-                    raise TypeError("Expecting a {} type for '{}' attribute".format(clazz, attribute))
+                cls._validate_attribute_value(attribute, clazz, value)
             self.__dict__[attribute] = value
 
         def getter(self):
@@ -69,6 +68,37 @@ class DataStruct(object):
 
         setter._spec = (attribute, clazz, kwargs)
         return property(getter, setter)
+
+    @classmethod
+    def _validate_class_type(cls, attribute, clazz):
+        while isinstance(clazz, cls.ARRAY_TYPES):
+            if len(clazz) != 1:
+                raise TypeError("Type definition for arrays must be a list/tuple of size 1")
+            clazz = clazz[0]
+
+        if type(clazz) is not type:
+            raise TypeError("Invalid type provided {} for attribute {}".format(clazz, attribute))
+
+    @classmethod
+    def _validate_attribute_value(cls, attribute, clazz, value):
+        if isinstance(clazz, cls.ARRAY_TYPES):
+            if not isinstance(value, cls.ARRAY_TYPES):
+                raise TypeError("Expecting a {} type for '{}' attribute".format(clazz, attribute))
+            for v in value:
+                cls._validate_attribute_value(attribute + "[...]", clazz[0], v)
+        elif not isinstance(value, clazz):
+            raise TypeError("Expecting a {} type for '{}' attribute".format(clazz, attribute))
+
+    @classmethod
+    def _convert_to_data(cls, value):
+        if isinstance(value, DataStruct):
+            value = {k: cls._convert_to_data(v) for k, v in value.__dict__.items()}
+        elif isinstance(value, cls.ARRAY_TYPES):
+            value = [cls._convert_to_data(v) for v in value]
+        return value
+
+    def to_dict(self):
+        return self._convert_to_data(self)
 
     def __init__(self, **kwargs):
         for k, v in kwargs.items():

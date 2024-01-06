@@ -136,7 +136,7 @@ class SubtitlesService(object):
                     if imdb_number and imdb_number[2:].isdigit():
                         payload.imdb_id = int(imdb_number[2:])
             else:
-                # Assuming its a movie
+                # Assuming it's a movie
                 title = normalize_string(
                     xbmc.getInfoLabel("VideoPlayer.OriginalTitle") or xbmc.getInfoLabel("VideoPlayer.Title"))
                 year = xbmc.getInfoLabel("VideoPlayer.Year")
@@ -151,7 +151,7 @@ class SubtitlesService(object):
             payload = SearchPayload(query=search_string)
 
         payload.languages = ",".join(languages)
-        logging.debug("Search payload: %s", payload.__dict__)
+        logging.debug("Search payload: %s", payload)
         results = self._search_subtitles(payload)
         results.sort(
             key=lambda r: (r.moviehash_match, r.ratings, r.language.lower() == preferred_language), reverse=True)

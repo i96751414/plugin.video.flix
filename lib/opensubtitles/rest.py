@@ -2,6 +2,7 @@ import json
 
 import requests
 
+from lib.api.flix.utils import string_types as string
 from lib.opensubtitles.utils import DataStruct
 
 API_KEY = "Hmq0xSCYdI9yG8w7FADtVFDrl2DAjUQA"
@@ -9,31 +10,31 @@ API_KEY = "Hmq0xSCYdI9yG8w7FADtVFDrl2DAjUQA"
 
 class JSONStruct(DataStruct):
     def json(self):
-        return json.dumps(self.__dict__)
+        return json.dumps(self.to_dict())
 
 
 class SearchPayload(JSONStruct):
-    ai_translated = JSONStruct.attr("ai_translated", str)  # exclude, include (default: include)
+    ai_translated = JSONStruct.attr("ai_translated", string)  # exclude, include (default: include)
     episode = JSONStruct.attr("episode_number", int)  # For Tvshows
-    foreign_parts_only = JSONStruct.attr("foreign_parts_only", str)  # exclude, include, only (default: include)
-    hearing_impaired = JSONStruct.attr("hearing_impaired", str)  # include, exclude, only. (default: include)
+    foreign_parts_only = JSONStruct.attr("foreign_parts_only", string)  # exclude, include, only (default: include)
+    hearing_impaired = JSONStruct.attr("hearing_impaired", string)  # include, exclude, only. (default: include)
     id = JSONStruct.attr("id", int)  # ID of the movie or episode
     imdb_id = JSONStruct.attr("imdb_id", int)  # IMDB ID of the movie or episode
-    languages = JSONStruct.attr("languages", str)  # Language code(s), coma separated (en,fr)
-    machine_translated = JSONStruct.attr("machine_translated", str)  # exclude, include (default: exclude)
-    hash = JSONStruct.attr("moviehash", str)  # hash of the movie
-    hash_match = JSONStruct.attr("moviehash_match", str)  # include, only (default: include)
-    order_by = JSONStruct.attr("order_by", str)  # Order of the returned results, accept any of above fields
-    order_direction = JSONStruct.attr("order_direction", str)  # Order direction of the returned results (asc,desc)
+    languages = JSONStruct.attr("languages", string)  # Language code(s), coma separated (en,fr)
+    machine_translated = JSONStruct.attr("machine_translated", string)  # exclude, include (default: exclude)
+    hash = JSONStruct.attr("moviehash", string)  # hash of the movie
+    hash_match = JSONStruct.attr("moviehash_match", string)  # include, only (default: include)
+    order_by = JSONStruct.attr("order_by", string)  # Order of the returned results, accept any of above fields
+    order_direction = JSONStruct.attr("order_direction", string)  # Order direction of the returned results (asc,desc)
     page = JSONStruct.attr("page", int)  # Results page to display
     parent_feature_id = JSONStruct.attr("parent_feature_id", int)  # For Tvshows
     parent_imdb_id = JSONStruct.attr("parent_imdb_id", int)  # For Tvshows
     parent_tmdb_id = JSONStruct.attr("parent_tmdb_id", int)  # For Tvshows
-    query = JSONStruct.attr("query", str)  # file name or text search
+    query = JSONStruct.attr("query", string)  # file name or text search
     season = JSONStruct.attr("season_number", int)  # For Tvshows
     tmdb_id = JSONStruct.attr("tmdb_id", int)  # TMDB ID of the movie or episode
-    trusted_sources = JSONStruct.attr("trusted_sources", str)  # include, only (default: include)
-    type = JSONStruct.attr("type", str)  # movie, episode or all, (default: all)
+    trusted_sources = JSONStruct.attr("trusted_sources", string)  # include, only (default: include)
+    type = JSONStruct.attr("type", string)  # movie, episode or all, (default: all)
     uploader_id = JSONStruct.attr("uploader_id", int)  # To be used alone - for user uploads listing
     year = JSONStruct.attr("year", int)  # Filter by movie/episode year
 
@@ -41,23 +42,23 @@ class SearchPayload(JSONStruct):
 class FileAttributes(JSONStruct):
     file_id = JSONStruct.attr("file_id", int)
     cd_number = JSONStruct.attr("cd_number", int)
-    file_name = JSONStruct.attr("file_name", str)
+    file_name = JSONStruct.attr("file_name", string)
 
 
 class SubtitleAttributes(JSONStruct):
-    subtitle_id = JSONStruct.attr("subtitle_id", str)
-    language = JSONStruct.attr("language", str, nullable=True)
+    subtitle_id = JSONStruct.attr("subtitle_id", string)
+    language = JSONStruct.attr("language", string, nullable=True)
     hearing_impaired = JSONStruct.attr("hearing_impaired", bool)
     ratings = JSONStruct.attr("ratings", float)
     moviehash_match = JSONStruct.attr("moviehash_match", bool, default=False)
-    release = JSONStruct.attr("release", str)
+    release = JSONStruct.attr("release", string)
     files = JSONStruct.attr("files", [FileAttributes])
 
 
 class DownloadRequest(JSONStruct):
     file_id = JSONStruct.attr("file_id", int)  # file_id from /subtitles search results
-    sub_format = JSONStruct.attr("sub_format", str)  # from /infos/formats
-    file_name = JSONStruct.attr("file_name", str)  # desired file name
+    sub_format = JSONStruct.attr("sub_format", string)  # from /infos/formats
+    file_name = JSONStruct.attr("file_name", string)  # desired file name
     in_fps = JSONStruct.attr("in_fps", int)  # used for conversions, in_fps and out_fps must then be indicated
     out_fps = JSONStruct.attr("out_fps", int)  # used for conversions, in_fps and out_fps must then be indicated
     timeshift = JSONStruct.attr("timeshift", int)
@@ -65,13 +66,13 @@ class DownloadRequest(JSONStruct):
 
 
 class DownloadResponse(JSONStruct):
-    link = JSONStruct.attr("link", str)
-    file_name = JSONStruct.attr("file_name", str)
+    link = JSONStruct.attr("link", string)
+    file_name = JSONStruct.attr("file_name", string)
     requests = JSONStruct.attr("requests", int)
     remaining = JSONStruct.attr("remaining", int)
-    message = JSONStruct.attr("message", str)
-    reset_time = JSONStruct.attr("reset_time", str)
-    reset_time_utc = JSONStruct.attr("reset_time_utc", str)
+    message = JSONStruct.attr("message", string)
+    reset_time = JSONStruct.attr("reset_time", string)
+    reset_time_utc = JSONStruct.attr("reset_time_utc", string)
 
 
 # API definition at https://opensubtitles.stoplight.io/docs/opensubtitles-api
@@ -110,11 +111,11 @@ class OpenSubtitles(object):
 
     def search_subtitles(self, payload):
         return [SubtitleAttributes.from_data(d["attributes"], strict=True)
-                for d in self._request("GET", "subtitles", params=payload.__dict__)["data"]]
+                for d in self._request("GET", "subtitles", params=payload.to_dict())["data"]]
 
     def download_subtitle(self, payload):
         return DownloadResponse.from_data(
-            self._request("POST", "download", params=payload.__dict__), strict=True)
+            self._request("POST", "download", params=payload.to_dict()), strict=True)
 
     @property
     def _login_headers(self):
