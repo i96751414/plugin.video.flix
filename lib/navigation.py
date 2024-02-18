@@ -36,6 +36,10 @@ set_logger()
 plugin = Plugin()
 
 
+class NoItemsException(Exception):
+    pass
+
+
 def progress(obj, length=None):
     return Progress(obj, length=length, heading=ADDON_NAME, message=translate(30110))
 
@@ -48,6 +52,7 @@ def list_item(label, icon):
     icon_path = os.path.join(ADDON_PATH, "resources", "images", icon)
     item = ListItem(label)
     item.setArt({"icon": icon_path, "poster": icon_path})
+    item.setProperty("IsPlayable", "false")
     return item
 
 
@@ -87,6 +92,26 @@ def handle_view(func):
         ret = func(*args, **kwargs)
         if view_list:
             set_view_mode(view_list[0])
+        return ret
+
+    return wrapper
+
+
+def check_directory(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        succeeded = False
+
+        try:
+            ret = func(*args, **kwargs)
+            succeeded = True
+        except NoItemsException:
+            # Ignore this exception on purpose, as we don't want to propagate it
+            # Just set succeeded as false
+            ret = None
+        finally:
+            endOfDirectory(plugin.handle, succeeded=succeeded)
+
         return ret
 
     return wrapper
@@ -163,6 +188,7 @@ def play_youtube_video(video_id):
 
 
 @plugin.route("/")
+@check_directory
 def index():
     if "action" in plugin.args:
         with SubtitlesService(handle=plugin.handle, params=plugin.args) as s:
@@ -173,10 +199,10 @@ def index():
     addDirectoryItem(plugin.handle, plugin.url_for(movies), li(30101, "movies.png"), isFolder=True)
     addDirectoryItem(plugin.handle, plugin.url_for(shows), li(30102, "series.png"), isFolder=True)
     addDirectoryItem(plugin.handle, plugin.url_for(search), li(30103, "search.png"))
-    endOfDirectory(plugin.handle)
 
 
 @plugin.route("/discover")
+@check_directory
 def discover():
     addDirectoryItem(plugin.handle, plugin.url_for(discover_select, MOVIES_TYPE),
                      list_item("{} - {}".format(translate(30100), translate(30101)), "movies.png"))
@@ -184,7 +210,6 @@ def discover():
                      list_item("{} - {}".format(translate(30100), translate(30102)), "series.png"))
     addDirectoryItem(plugin.handle, plugin.url_for(discover_people),
                      list_item("{} - {}".format(translate(30100), translate(30104)), "people.png"), isFolder=True)
-    endOfDirectory(plugin.handle)
 
 
 def dialog_genres(media_type, kwargs):
@@ -247,6 +272,7 @@ def discover_select(media_type):
 @query_arg("primary_release_year", required=False)
 @query_arg("with_genres", required=False)
 @handle_view
+@check_directory
 def discover_movies(**kwargs):
     setContent(plugin.handle, MOVIES_TYPE)
     kwargs.setdefault("include_adult", include_adult_content())
@@ -254,7 +280,6 @@ def discover_movies(**kwargs):
     for movie in progress(*tmdb.get_movies(data)):
         add_movie(movie)
     handle_page(data, discover_movies, **kwargs)
-    endOfDirectory(plugin.handle)
 
 
 @plugin.route("/discover/shows")
@@ -262,6 +287,7 @@ def discover_movies(**kwargs):
 @query_arg("first_air_date_year", required=False)
 @query_arg("with_genres", required=False)
 @handle_view
+@check_directory
 def discover_shows(**kwargs):
     setContent(plugin.handle, SHOWS_TYPE)
     kwargs.setdefault("include_adult", include_adult_content())
@@ -269,57 +295,57 @@ def discover_shows(**kwargs):
     for show in progress(*tmdb.get_shows(data)):
         add_show(show)
     handle_page(data, discover_shows, **kwargs)
-    endOfDirectory(plugin.handle)
 
 
 @plugin.route("/discover/people")
 @query_arg("page", required=False)
 @handle_view
+@check_directory
 def discover_people(**kwargs):
     data = tmdbsimple.People().popular(**kwargs)
     for person_li, person_id in tmdb.person_list_items(data):
         add_person(person_li, person_id)
     handle_page(data, discover_people, **kwargs)
-    endOfDirectory(plugin.handle)
 
 
 @plugin.route("/movies")
+@check_directory
 def movies():
     addDirectoryItem(plugin.handle, plugin.url_for(trending_movies), li(30114, "trending.png"), isFolder=True)
     addDirectoryItem(plugin.handle, plugin.url_for(get_movies, "popular"), li(30115, "popular.png"), isFolder=True)
     addDirectoryItem(plugin.handle, plugin.url_for(get_movies, "top_rated"), li(30116, "top_rated.png"), isFolder=True)
     addDirectoryItem(plugin.handle, plugin.url_for(get_movies, "now_playing"), li(30117, "playing.png"), isFolder=True)
     addDirectoryItem(plugin.handle, plugin.url_for(get_movies, "upcoming"), li(30118, "upcoming.png"), isFolder=True)
-    endOfDirectory(plugin.handle)
 
 
 @plugin.route("/movies/trending")
 @query_arg("page", required=False)
 @handle_view
+@check_directory
 def trending_movies(**kwargs):
     setContent(plugin.handle, MOVIES_TYPE)
     data = tmdb.Trending("movie", "week").get_trending(**kwargs)
     for movie in progress(*tmdb.get_movies(data)):
         add_movie(movie)
     handle_page(data, trending_movies, **kwargs)
-    endOfDirectory(plugin.handle)
 
 
 @plugin.route("/movies/similar/<tmdb_id>")
 @query_arg("page", required=False)
 @handle_view
+@check_directory
 def similar_movies(tmdb_id, **kwargs):
     setContent(plugin.handle, MOVIES_TYPE)
     data = tmdbsimple.Movies(tmdb_id).similar_movies(**kwargs)
     for movie in progress(*tmdb.get_movies(data)):
         add_movie(movie)
     handle_page(data, similar_movies, tmdb_id=tmdb_id, **kwargs)
-    endOfDirectory(plugin.handle)
 
 
 @plugin.route("/movies/get/<call>")
 @query_arg("page", required=False)
 @handle_view
+@check_directory
 def get_movies(call, **kwargs):
     setContent(plugin.handle, MOVIES_TYPE)
     logging.debug("Going to call tmdb.Movies().%s()", call)
@@ -327,46 +353,46 @@ def get_movies(call, **kwargs):
     for movie in progress(*tmdb.get_movies(data)):
         add_movie(movie)
     handle_page(data, get_movies, call=call, **kwargs)
-    endOfDirectory(plugin.handle)
 
 
 @plugin.route("/shows")
+@check_directory
 def shows():
     addDirectoryItem(plugin.handle, plugin.url_for(trending_shows), li(30119, "trending.png"), isFolder=True)
     addDirectoryItem(plugin.handle, plugin.url_for(get_shows, "popular"), li(30120, "popular.png"), isFolder=True)
     addDirectoryItem(plugin.handle, plugin.url_for(get_shows, "top_rated"), li(30121, "top_rated.png"), isFolder=True)
     addDirectoryItem(plugin.handle, plugin.url_for(get_shows, "airing_today"), li(30122, "playing.png"), isFolder=True)
     addDirectoryItem(plugin.handle, plugin.url_for(get_shows, "on_the_air"), li(30123, "upcoming.png"), isFolder=True)
-    endOfDirectory(plugin.handle)
 
 
 @plugin.route("/shows/trending")
 @query_arg("page", required=False)
 @handle_view
+@check_directory
 def trending_shows(**kwargs):
     setContent(plugin.handle, SHOWS_TYPE)
     data = tmdb.Trending("tv", "week").get_trending(**kwargs)
     for show in progress(*tmdb.get_shows(data)):
         add_show(show)
     handle_page(data, trending_shows, **kwargs)
-    endOfDirectory(plugin.handle)
 
 
 @plugin.route("/shows/similar/<tmdb_id>")
 @query_arg("page", required=False)
 @handle_view
+@check_directory
 def similar_shows(tmdb_id, **kwargs):
     setContent(plugin.handle, SHOWS_TYPE)
     data = tmdbsimple.TV(tmdb_id).similar(**kwargs)
     for show in progress(*tmdb.get_shows(data)):
         add_show(show)
     handle_page(data, similar_shows, tmdb_id=tmdb_id, **kwargs)
-    endOfDirectory(plugin.handle)
 
 
 @plugin.route("/shows/get/<call>")
 @query_arg("page", required=False)
 @handle_view
+@check_directory
 def get_shows(call, **kwargs):
     setContent(plugin.handle, SHOWS_TYPE)
     logging.debug("Going to call tmdb.TV().%s()", call)
@@ -374,7 +400,6 @@ def get_shows(call, **kwargs):
     for show in progress(*tmdb.get_shows(data)):
         add_show(show)
     handle_page(data, get_shows, call=call, **kwargs)
-    endOfDirectory(plugin.handle)
 
 
 @plugin.route("/library/add/<media_type>/<tmdb_id>")
@@ -412,6 +437,7 @@ def search():
 @plugin.route("/search_history/<search_type>")
 @query_arg("page", required=False)
 @handle_view
+@check_directory
 def search_history(search_type, page=1):
     search_type = int(search_type)
     page = int(page)
@@ -433,7 +459,6 @@ def search_history(search_type, page=1):
                 item,
             )
         handle_page(s.pages_count(search_type), search_history, search_type=search_type, page=page)
-    endOfDirectory(plugin.handle)
 
 
 @plugin.route("/search_entry/delete/<search_id>")
@@ -493,6 +518,7 @@ def do_query(search_type, query=None, search_action=None):
 @query_arg("page", required=False)
 @query_arg("query")
 @handle_view
+@check_directory
 def handle_search(search_type, **kwargs):
     search_type = int(search_type)
     kwargs.setdefault("include_adult", include_adult_content())
@@ -514,36 +540,35 @@ def handle_search(search_type, **kwargs):
         logging.error("Invalid search type '%s' used", search_type)
         raise ValueError("Unknown search type")
 
-    handle_page(data, handle_search, search_type=search_type, **kwargs)
-
-    succeeded = tmdb.has_results(data)
-    if not succeeded:
+    if not tmdb.has_results(data):
         notification(translate(30112))
-    endOfDirectory(plugin.handle, succeeded)
+        raise NoItemsException("No results found for search")
+
+    handle_page(data, handle_search, search_type=search_type, **kwargs)
 
 
 @plugin.route("/handle_person/<person_id>")
+@check_directory
 def handle_person(person_id):
     for m, is_movie in progress(*tmdb.get_person_media(person_id)):
         add_movie(m) if is_movie else add_show(m)
-    endOfDirectory(plugin.handle)
 
 
 @plugin.route("/handle_show/<show_id>")
+@check_directory
 def handle_show(show_id):
     setContent(plugin.handle, SHOWS_TYPE)
     for season in tmdb.Show(show_id).seasons(get_unaired=show_unaired_episodes()):
         add_season(season)
-    endOfDirectory(plugin.handle)
 
 
 @plugin.route("/handle_season/<show_id>/<season_number>")
 @query_arg("show_title", required=False)
+@check_directory
 def handle_season(show_id, season_number, show_title=None):
     setContent(plugin.handle, EPISODES_TYPE)
     for episode in tmdb.Season(show_id, season_number, show_title).episodes(get_unaired=show_unaired_episodes()):
         add_episode(episode)
-    endOfDirectory(plugin.handle)
 
 
 @plugin.route("/play_trailer/<media_type>/<tmdb_id>")
