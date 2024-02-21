@@ -28,7 +28,7 @@ msgstr "Ativar cache"
 
 msgctxt "#30002"
 msgid "Cache expiration time (days)"
-msgstr "Tempo de expiração do cache (dias)"
+msgstr "Tempo de expiração da cache (dias)"
 
 msgctxt "#30003"
 msgid "Language"
@@ -40,7 +40,7 @@ msgstr "Preferir títulos originais"
 
 msgctxt "#30005"
 msgid "Install YouTube add-on"
-msgstr "Instalar o add-on YouTube"
+msgstr "Instalar add-on YouTube"
 
 msgctxt "#30006"
 msgid "Providers timeout (seconds)"
@@ -56,7 +56,7 @@ msgstr "Tempo limite de resolução dos provedores (segundos)"
 
 msgctxt "#30009"
 msgid "Username"
-msgstr "Nome do usuário"
+msgstr "Nome de Utilizador"
 
 msgctxt "#30010"
 msgid "Password"
@@ -92,27 +92,27 @@ msgstr "Pasta da biblioteca"
 
 msgctxt "#30018"
 msgid "Show unaired episodes"
-msgstr "Mostrar episódios não exibidos"
+msgstr "Exibir episódios não emitidos"
 
 msgctxt "#30019"
 msgid "Show special episodes"
-msgstr "Mostrar episódios especiais"
+msgstr "Exibir episódios especiais"
 
 msgctxt "#30020"
 msgid "Update Kodi library after insertion"
-msgstr "Atualizar a biblioteca do Kodi após inserção"
+msgstr "Atualizar biblioteca do Kodi após inserção"
 
 msgctxt "#30021"
 msgid "Rebuild library"
-msgstr "Re-construir a biblioteca"
+msgstr "Re-construir biblioteca"
 
 msgctxt "#30022"
 msgid "Automatically update library content"
-msgstr "Atualizar automaticamente o conteúdo da biblioteca"
+msgstr "Atualizar conteúdo da biblioteca automaticamente"
 
 msgctxt "#30023"
 msgid "Automatically add new content to library"
-msgstr "Adicionar automaticamente novos conteúdos à biblioteca"
+msgstr "Adicionar novo conteúdo na biblioteca automaticamente"
 
 msgctxt "#30024"
 msgid "Number of pages to add"
@@ -132,7 +132,7 @@ msgstr "Propagar tipo de visualização"
 
 msgctxt "#30028"
 msgid "Show unaired episodes"
-msgstr "Mostrar episódios não exibidos"
+msgstr "Mostrar episódios não emitidos"
 
 msgctxt "#30029"
 msgid "Save last chosen result"
@@ -185,7 +185,7 @@ msgstr "Por favor, aguarde..."
 
 msgctxt "#30111"
 msgid "Getting results from providers..."
-msgstr "Obtendo resultados dos provedores..."
+msgstr "A obter resultados dos provedores..."
 
 msgctxt "#30112"
 msgid "No results found!"
@@ -197,7 +197,7 @@ msgstr "Resultados disponíveis:"
 
 msgctxt "#30114"
 msgid "Trending movies"
-msgstr "Filmes em alta"
+msgstr "Filmes em tendência"
 
 msgctxt "#30115"
 msgid "Popular movies"
@@ -217,7 +217,7 @@ msgstr "Próximas estreias"
 
 msgctxt "#30119"
 msgid "Trending TV shows"
-msgstr "Séries em alta"
+msgstr "Séries em tendência"
 
 msgctxt "#30120"
 msgid "Popular TV shows"
@@ -289,7 +289,7 @@ msgstr "Editar entrada"
 
 msgctxt "#30137"
 msgid "Item previously added to library"
-msgstr "Item adicionado anteriormente à biblioteca"
+msgstr "Item adicionado anteriormente"
 
 msgctxt "#30138"
 msgid "Library rebuilt"
@@ -301,15 +301,15 @@ msgstr "Reproduzir"
 
 msgctxt "#30140"
 msgid "Adding contents to library"
-msgstr "Adicionando conteúdos à biblioteca"
+msgstr "A adcionar conteúdos na biblioteca"
 
 msgctxt "#30141"
 msgid "Updating library"
-msgstr "Atualizando a biblioteca"
+msgstr "A atualizar biblioteca"
 
 msgctxt "#30142"
 msgid "Re-building library"
-msgstr "Reconstruindo a biblioteca"
+msgstr "A reconstruir biblioteca"
 
 msgctxt "#30143"
 msgid "Multiple filters"
