@@ -92,11 +92,11 @@ msgid "Library path"
 msgstr ""
 
 msgctxt "#30018"
-msgid "Add unaired episodes"
+msgid "Show unaired episodes"
 msgstr ""
 
 msgctxt "#30019"
-msgid "Add special episodes"
+msgid "Show special episodes"
 msgstr ""
 
 msgctxt "#30020"

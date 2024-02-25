@@ -91,12 +91,12 @@ msgid "Library path"
 msgstr "Pasta da biblioteca"
 
 msgctxt "#30018"
-msgid "Add unaired episodes"
-msgstr "Adicionar episódios não emitidos"
+msgid "Show unaired episodes"
+msgstr "Exibir episódios não emitidos"
 
 msgctxt "#30019"
-msgid "Add special episodes"
-msgstr "Adicionar episódios especiais"
+msgid "Show special episodes"
+msgstr "Exibir episódios especiais"
 
 msgctxt "#30020"
 msgid "Update Kodi library after insertion"
