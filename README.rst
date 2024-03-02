@@ -1,5 +1,6 @@
-Flix
-====
+.. image:: resources/images/flix_banner.png
+    :target: resources/images/flix_banner.png
+    :alt: Flix banner
 
 .. image:: https://readthedocs.org/projects/flix/badge/?version=latest
     :target: https://flix.readthedocs.io/en/latest/?badge=latest
@@ -12,6 +13,9 @@ Flix
 .. image:: https://app.codacy.com/project/badge/Grade/b317e247ed704deb8a717505c8823d96
     :target: https://www.codacy.com/gh/i96751414/plugin.video.flix/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=i96751414/plugin.video.flix&amp;utm_campaign=Badge_Grade
     :alt: Codacy Badge
+
+What it is
+----------
 
 Flix, a movie scraper for `Kodi`_. It uses `TMDB`_ api for scraping data and allows for custom providers.
 
