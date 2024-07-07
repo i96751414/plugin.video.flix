@@ -18,12 +18,15 @@ jobs:
       max-parallel: 5
       matrix:
         python-version: [ 3.7 ]
+    outputs:
+      changelog: ${{ steps.changelog.outputs.changelog }}
+
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -35,12 +38,19 @@ jobs:
       - name: Lint
         run: flake8
 
+      - name: Get changelog
+        id: changelog
+        run: |
+          printf "changelog<<EOF\n" >>"${GITHUB_OUTPUT}"
+          perl -0777ne '/<news>\s*(.*?)\s*<\/news>/s && print $1' addon.xml >>"${GITHUB_OUTPUT}"
+          printf "\nEOF\n" >>"${GITHUB_OUTPUT}"
+
   docs:
     name: Docs
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Build docs
         uses: ammaraskar/sphinx-action@master
@@ -49,7 +59,7 @@ jobs:
           docs-folder: "docs"
 
       - name: Upload docs
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: flix-docs-html
           path: docs/build/html
@@ -61,7 +71,7 @@ jobs:
     if: success() && github.event_name == 'create' && startsWith(github.ref, 'refs/tags/')
     steps:
       - name: Get docs
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: flix-docs-html
           path: flix-docs-html
@@ -72,7 +82,7 @@ jobs:
           asset_name="flix-docs-html-${GITHUB_REF/refs\/tags\//}"
           mv flix-docs-html "${asset_name}"
           zip -9 -r "${asset_name}.zip" "${asset_name}"
-          echo "::set-output name=asset_name::${asset_name}.zip"
+          echo "asset_name=${asset_name}.zip" >>"${GITHUB_OUTPUT}"
 
       - name: Perform release
         id: create_release
@@ -82,6 +92,7 @@ jobs:
         with:
           tag_name: ${{ github.ref }}
           release_name: ${{ github.ref }}
+          body: ${{ needs.build.outputs.changelog }}
           draft: false
           prerelease: false
 
