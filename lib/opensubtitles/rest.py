@@ -75,6 +75,10 @@ class DownloadResponse(JSONStruct):
     reset_time_utc = JSONStruct.attr("reset_time_utc", string)
 
 
+class OpenSubtitlesError(Exception):
+    pass
+
+
 # API definition at https://opensubtitles.stoplight.io/docs/opensubtitles-api
 class OpenSubtitles(object):
     API_REST = "https://api.opensubtitles.com/api/v1"
@@ -115,13 +119,17 @@ class OpenSubtitles(object):
 
     def download_subtitle(self, payload):
         return DownloadResponse.from_data(
-            self._request("POST", "download", params=payload.to_dict()), strict=True)
+            self._request("POST", "download", params=payload.to_dict(), headers=self._login_headers), strict=True)
 
     @property
     def _login_headers(self):
-        return {"Authorization": "Bearer " + self._token}
+        token = self._token
+        return {"Authorization": "Bearer " + token} if token else None
 
     def _request(self, method, url, *args, **kwargs):
         r = self._session.request(method, self.API_REST + "/" + url, *args, **kwargs)
-        r.raise_for_status()
-        return r.json()
+        data = r.json()
+        if r.status_code >= 400:
+            errors = data.get("errors")
+            raise OpenSubtitlesError("; ".join(errors) if errors else data.get("message", r.reason))
+        return data
