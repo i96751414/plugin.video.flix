@@ -8,11 +8,12 @@ import requests
 
 
 class DataStruct(object):
-    ARRAY_TYPES = (list, tuple)
+    _ARRAY_TYPES = (list, tuple)
+    _SPEC_FIELD = "_spec"
 
     @classmethod
     def attributes(cls):
-        return [getattr(value.fset, "_spec") for value in cls.__dict__.values() if isinstance(value, property)]
+        return [getattr(value.fset, cls._SPEC_FIELD) for value in cls.__dict__.values() if isinstance(value, property)]
 
     @classmethod
     def from_data(cls, data, strict=False):
@@ -39,8 +40,8 @@ class DataStruct(object):
 
     @classmethod
     def _convert_from_data(cls, attribute, attribute_type, value, strict=False):
-        if isinstance(attribute_type, cls.ARRAY_TYPES):
-            if not isinstance(value, cls.ARRAY_TYPES):
+        if isinstance(attribute_type, cls._ARRAY_TYPES):
+            if not isinstance(value, cls._ARRAY_TYPES):
                 raise ValueError(
                     "Unexpected value type for attribute '{}'. Received {} but expecting [{}]".format(
                         attribute, value.__class__, attribute_type[0]))
@@ -66,12 +67,12 @@ class DataStruct(object):
         def getter(self):
             return self.__dict__.get(attribute)
 
-        setter._spec = (attribute, clazz, kwargs)
+        setattr(setter, cls._SPEC_FIELD, (attribute, clazz, kwargs))
         return property(getter, setter)
 
     @classmethod
     def _validate_class_type(cls, attribute, clazz):
-        while isinstance(clazz, cls.ARRAY_TYPES):
+        while isinstance(clazz, cls._ARRAY_TYPES):
             if len(clazz) != 1:
                 raise TypeError("Type definition for arrays must be a list/tuple of size 1")
             clazz = clazz[0]
@@ -81,8 +82,8 @@ class DataStruct(object):
 
     @classmethod
     def _validate_attribute_value(cls, attribute, clazz, value):
-        if isinstance(clazz, cls.ARRAY_TYPES):
-            if not isinstance(value, cls.ARRAY_TYPES):
+        if isinstance(clazz, cls._ARRAY_TYPES):
+            if not isinstance(value, cls._ARRAY_TYPES):
                 raise TypeError("Expecting a {} type for '{}' attribute".format(clazz, attribute))
             for v in value:
                 cls._validate_attribute_value(attribute + "[...]", clazz[0], v)
@@ -93,7 +94,7 @@ class DataStruct(object):
     def _convert_to_data(cls, value):
         if isinstance(value, DataStruct):
             value = {k: cls._convert_to_data(v) for k, v in value.__dict__.items()}
-        elif isinstance(value, cls.ARRAY_TYPES):
+        elif isinstance(value, cls._ARRAY_TYPES):
             value = [cls._convert_to_data(v) for v in value]
         return value
 

@@ -126,13 +126,13 @@ class SubtitlesService(object):
             tv_show_title = normalize_string(xbmc.getInfoLabel("VideoPlayer.TVshowtitle"))
             imdb_number = xbmc.getInfoLabel("VideoPlayer.IMDBNumber")
             if tv_show_title:
-                # Assuming its a tv show
+                # Assuming it's a tv show
                 payload.query = tv_show_title
                 season = xbmc.getInfoLabel("VideoPlayer.Season")
                 episode = xbmc.getInfoLabel("VideoPlayer.Episode")
                 if episode and season:
-                    payload.season = season
-                    payload.episode = episode
+                    payload.season = int(season)
+                    payload.episode = int(episode)
                     if imdb_number and imdb_number[2:].isdigit():
                         payload.imdb_id = int(imdb_number[2:])
             else:

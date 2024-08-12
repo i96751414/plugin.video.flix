@@ -24,6 +24,7 @@
         <description lang="en">Flix is a movie scraper which allows for custom providers.</description>
         <news>
 - Improve opensubtitles session and error handling
+- Fix subtitles search for TV shows
         </news>
         <assets>
             <icon>icon.png</icon>
