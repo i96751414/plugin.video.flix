@@ -5,6 +5,8 @@
         <setting id="cache_enabled" type="bool" label="30001" default="true"/>
         <setting id="cache_expiration" type="slider" label="30002" option="int" range="1,1,30" default="7"
                  enable="eq(-1,true)" subsetting="true"/>
+        <setting label="30005" type="action" action="RunPlugin(plugin://plugin.video.flix/clear_cache)"
+                 enable="eq(-2,true)" subsetting="true"/>
         <setting id="language" label="30003" type="select" default="Kodi"
                  values="Kodi|ar-AE|ar-SA|bg|bn|ca|ch|cs|da|de|el|en|eo|es-ES|es-MX|eu|fa|fi|fr-CA|fr-FR|he|hi|hu|id|it|ja|ka|kn|ko|lt|ml|nb|nl|no|pl|pt-BR|pt-PT|ro|ru|sk|sl|sr|sv|ta|te|th|tr|uk|vi|zh-CN|zh-TW"/>
         <setting id="prefer_original_titles" type="bool" label="30004" default="true"/>

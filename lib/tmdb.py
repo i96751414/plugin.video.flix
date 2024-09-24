@@ -17,6 +17,10 @@ tmdbsimple.API_KEY = "eee9ac1822295afd8dadb555a0cc4ea8"
 _tmdb_original_get = tmdbsimple.base.TMDB._GET
 
 
+def clear_cache():
+    Cache.get_instance().clear()
+
+
 def _tmdb_get(self, path, params=None):
     cache = Cache.get_instance() if is_cache_enabled() else None
     if cache is None:

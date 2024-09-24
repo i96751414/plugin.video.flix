@@ -39,8 +39,8 @@ msgid "Prefer original titles"
 msgstr "Preferir títulos originais"
 
 msgctxt "#30005"
-msgid "Install YouTube add-on"
-msgstr "Instalar o add-on YouTube"
+msgid "Clear cache"
+msgstr "Limpar o cache"
 
 msgctxt "#30006"
 msgid "Providers timeout (seconds)"
@@ -330,3 +330,7 @@ msgstr "Sem provedores disponíveis"
 msgctxt "#30147"
 msgid "Do you want to use the previously chosen result?"
 msgstr "Deseja usar o resultado escolhido anteriormente?"
+
+msgctxt "#30148"
+msgid "Cache cleared"
+msgstr "Cache limpo"

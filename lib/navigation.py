@@ -422,6 +422,12 @@ def library_rebuild():
         notification(translate(30138))
 
 
+@plugin.route("/clear_cache")
+def clear_cache():
+    tmdb.clear_cache()
+    notification(translate(30148))
+
+
 @plugin.route("/search")
 def search():
     # 0 - movie, 1 - show, 2 - person, 3 - all

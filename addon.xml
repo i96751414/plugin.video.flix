@@ -4,7 +4,7 @@
         <!--<import addon="xbmc.python" version="3.0.0"/>-->
         <import addon="script.module.routing" version="0.2.3"/>
         <import addon="script.module.requests" version="2.22.0"/>
-        <import addon="script.module.cached" version="0.0.1"/>
+        <import addon="script.module.cached" version="0.0.5"/>
         <import addon="script.module.tmdbsimple" version="2.2.0"/>
         <!-- futures must be optional so we have py2/3 compatibility -->
         <import addon="script.module.futures" version="2.2.0" optional="true"/>
@@ -25,6 +25,7 @@
         <news>
 - Improve opensubtitles session and error handling
 - Fix subtitles search for TV shows
+- Add setting for clearing cache
         </news>
         <assets>
             <icon>icon.png</icon>
