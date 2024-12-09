@@ -5,7 +5,7 @@ import requests
 from lib.api.flix.utils import string_types as string
 from lib.opensubtitles.utils import DataStruct
 
-API_KEY = "Hmq0xSCYdI9yG8w7FADtVFDrl2DAjUQA"
+API_KEY = "vbUJk0IBZtKMYomAJ0Sp8wQVdlbHQ1EW"
 
 
 class JSONStruct(DataStruct):
