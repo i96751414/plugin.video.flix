@@ -128,8 +128,16 @@ class OpenSubtitles(object):
 
     def _request(self, method, url, *args, **kwargs):
         r = self._session.request(method, self.API_REST + "/" + url, *args, **kwargs)
-        data = r.json()
-        if r.status_code >= 400:
-            errors = data.get("errors")
-            raise OpenSubtitlesError("; ".join(errors) if errors else data.get("message", r.reason))
-        return data
+
+        try:
+            if r.status_code >= 500:
+                raise OpenSubtitlesError("HTTP {}: {}".format(r.status_code, r.reason))
+
+            data = r.json()
+            if r.status_code >= 400:
+                errors = data.get("errors")
+                raise OpenSubtitlesError("; ".join(errors) if errors else data.get("message", r.reason))
+
+            return data
+        finally:
+            r.close()
