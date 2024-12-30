@@ -13,22 +13,25 @@ class DataStruct(object):
 
     @classmethod
     def attributes(cls):
-        return [getattr(value.fset, cls._SPEC_FIELD) for value in cls.__dict__.values() if isinstance(value, property)]
+        return [attr for attr in (
+            getattr(value.fset, cls._SPEC_FIELD)
+            for clazz in cls.__mro__
+            for value in clazz.__dict__.values()
+            if isinstance(value, property) and value.fset is not None
+        ) if attr is not None]
 
     @classmethod
     def from_data(cls, data, strict=False):
         obj = cls()
 
         if strict:
-            for attribute, attribute_type, kwargs in cls.attributes():
+            for attribute, attribute_type, params in cls.attributes():
                 # We can use obj as sentinel as well
                 value = data.get(attribute, obj)
                 if value is not obj:
-                    if attribute_type is not None and not (kwargs.get("nullable") and value is None):
-                        value = cls._convert_from_data(attribute, attribute_type, value, strict)
-                    obj.__setattr__(attribute, value)
+                    obj.__setattr__(attribute, cls._convert_from_data(attribute, attribute_type, value, params, strict))
                 else:
-                    default = kwargs.get("default", obj)
+                    default = params.get("default", obj)
                     if default is not obj:
                         obj.__setattr__(attribute, default)
                     else:
@@ -39,35 +42,39 @@ class DataStruct(object):
         return obj
 
     @classmethod
-    def _convert_from_data(cls, attribute, attribute_type, value, strict=False):
-        if isinstance(attribute_type, cls._ARRAY_TYPES):
-            if not isinstance(value, cls._ARRAY_TYPES):
-                raise ValueError(
-                    "Unexpected value type for attribute '{}'. Received {} but expecting [{}]".format(
-                        attribute, value.__class__, attribute_type[0]))
-            value = [cls._convert_from_data("{}[...]".format(attribute), attribute_type[0], v, strict) for v in value]
-        elif issubclass(attribute_type, DataStruct) and isinstance(value, dict):
-            value = attribute_type.from_data(value, strict=strict)
-        elif not isinstance(value, attribute_type):
-            raise ValueError(
-                "Unexpected value type for attribute '{}'. Received {} but expecting {}".format(
-                    attribute, value.__class__, attribute_type))
+    def _convert_from_data(cls, attribute, attribute_type, value, params, strict=False):
+        nullable = params.get("nullable")
+        converter = params.get("from_converter")
+
+        if converter and not (nullable and value is None):
+            value = converter(value)
+
+        if attribute_type is not None:
+            if isinstance(attribute_type, cls._ARRAY_TYPES):
+                if not isinstance(value, cls._ARRAY_TYPES):
+                    raise ValueError(
+                        "Unexpected value type for attribute '{}'. Received {} but expecting [{}]".format(
+                            attribute, value.__class__, attribute_type[0]))
+                value = [cls._convert_from_data(attribute + "[...]", attribute_type[0], v, {}, strict) for v in value]
+            elif issubclass(attribute_type, DataStruct) and isinstance(value, dict):
+                value = attribute_type.from_data(value, strict=strict)
+
         return value
 
     @classmethod
-    def attr(cls, attribute, clazz=None, **kwargs):
+    def attr(cls, attribute, clazz=None, **params):
         if clazz:
             cls._validate_class_type(attribute, clazz)
 
         def setter(self, value):
-            if clazz and not (kwargs.get("nullable") and value is None):
+            if clazz and not (params.get("nullable") and value is None):
                 cls._validate_attribute_value(attribute, clazz, value)
             self.__dict__[attribute] = value
 
         def getter(self):
             return self.__dict__.get(attribute)
 
-        setattr(setter, cls._SPEC_FIELD, (attribute, clazz, kwargs))
+        setattr(setter, cls._SPEC_FIELD, (attribute, clazz, params))
         return property(getter, setter)
 
     @classmethod
@@ -88,12 +95,14 @@ class DataStruct(object):
             for v in value:
                 cls._validate_attribute_value(attribute + "[...]", clazz[0], v)
         elif not isinstance(value, clazz):
-            raise TypeError("Expecting a {} type for '{}' attribute".format(clazz, attribute))
+            raise TypeError("Expecting a {} type for '{}' attribute, but received {}".format(
+                clazz, attribute, value.__class__))
 
     @classmethod
     def _convert_to_data(cls, value):
         if isinstance(value, DataStruct):
-            value = {k: cls._convert_to_data(v) for k, v in value.__dict__.items()}
+            value = {attribute: cls._convert_to_data(value.__dict__.get(attribute))
+                     for attribute, _, _ in value.attributes()}
         elif isinstance(value, cls._ARRAY_TYPES):
             value = [cls._convert_to_data(v) for v in value]
         return value
@@ -108,7 +117,7 @@ class DataStruct(object):
             self.__setattr__(k, v)
 
     def __repr__(self):
-        return str(self.__dict__)
+        return str(self.to_dict())
 
 
 def calculate_hash(path, chunk_size=65536):
