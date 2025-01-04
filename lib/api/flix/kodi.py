@@ -455,7 +455,7 @@ class Progress(object):
             self._dialog = None
 
 
-class KodiLogHandler(logging.StreamHandler):
+class KodiLogHandler(logging.Handler):
     levels = {
         logging.CRITICAL: xbmc.LOGFATAL,
         logging.ERROR: xbmc.LOGERROR,
@@ -471,9 +471,6 @@ class KodiLogHandler(logging.StreamHandler):
 
     def emit(self, record):
         xbmc.log(assure_str(self.format(record)), self.levels[record.levelno])
-
-    def flush(self):
-        pass
 
 
 def set_logger(name=None, level=logging.NOTSET):
