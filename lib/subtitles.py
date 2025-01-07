@@ -2,10 +2,10 @@ import logging
 import os
 import sys
 import time
-import unicodedata
 from datetime import timedelta
 
 import requests
+import unicodedata
 import xbmc
 import xbmcgui
 import xbmcplugin
@@ -79,9 +79,6 @@ class SubtitlesService(object):
         self._handle = handle or int(sys.argv[1])
         self._params = params or parse_qs(sys.argv[2].lstrip("?"))
         self._api = OpenSubtitles(ADDON_ID, ADDON_VERSION)
-        self._api.login(get_os_username(), get_os_password())
-        # on /login there is set limit 1 request per 1 second to avoid flooding with wrong credentials
-        time.sleep(1)
 
     def _add_result(self, result):
         list_item = xbmcgui.ListItem(label=result.language, label2=result.release)
@@ -176,6 +173,11 @@ class SubtitlesService(object):
 
         xbmcplugin.addDirectoryItem(self._handle, path, xbmcgui.ListItem(label=result.file_name))
 
+    def login(self):
+        self._api.login(get_os_username(), get_os_password())
+        # on /login there is set limit 1 request per 1 second to avoid flooding with wrong credentials
+        time.sleep(1)
+
     def run(self):
         succeeded = True
         try:
@@ -198,8 +200,12 @@ class SubtitlesService(object):
         xbmcplugin.endOfDirectory(self._handle, succeeded)
 
     def __enter__(self):
+        self.login()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self._api.logout()
+        try:
+            self._api.logout()
+        finally:
+            self._api.close()
         return False

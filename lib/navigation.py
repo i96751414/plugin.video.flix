@@ -193,12 +193,11 @@ def index():
     if "action" in plugin.args:
         with SubtitlesService(handle=plugin.handle, params=plugin.args) as s:
             s.run()
-        return
-
-    addDirectoryItem(plugin.handle, plugin.url_for(discover), li(30100, "discover.png"), isFolder=True)
-    addDirectoryItem(plugin.handle, plugin.url_for(movies), li(30101, "movies.png"), isFolder=True)
-    addDirectoryItem(plugin.handle, plugin.url_for(shows), li(30102, "series.png"), isFolder=True)
-    addDirectoryItem(plugin.handle, plugin.url_for(search), li(30103, "search.png"))
+    else:
+        addDirectoryItem(plugin.handle, plugin.url_for(discover), li(30100, "discover.png"), isFolder=True)
+        addDirectoryItem(plugin.handle, plugin.url_for(movies), li(30101, "movies.png"), isFolder=True)
+        addDirectoryItem(plugin.handle, plugin.url_for(shows), li(30102, "series.png"), isFolder=True)
+        addDirectoryItem(plugin.handle, plugin.url_for(search), li(30103, "search.png"))
 
 
 @plugin.route("/discover")

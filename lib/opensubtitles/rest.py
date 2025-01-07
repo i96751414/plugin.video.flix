@@ -1,4 +1,5 @@
 import json
+from contextlib import closing
 
 import requests
 
@@ -127,9 +128,7 @@ class OpenSubtitles(object):
         return {"Authorization": "Bearer " + token} if token else None
 
     def _request(self, method, url, *args, **kwargs):
-        r = self._session.request(method, self.API_REST + "/" + url, *args, **kwargs)
-
-        try:
+        with closing(self._session.request(method, self.API_REST + "/" + url, *args, **kwargs)) as r:
             if r.status_code >= 500:
                 raise OpenSubtitlesError("HTTP {}: {}".format(r.status_code, r.reason))
 
@@ -139,5 +138,13 @@ class OpenSubtitles(object):
                 raise OpenSubtitlesError("; ".join(errors) if errors else data.get("message", r.reason))
 
             return data
-        finally:
-            r.close()
+
+    def close(self):
+        self._session.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+        return False
