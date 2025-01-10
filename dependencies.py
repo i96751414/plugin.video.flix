@@ -1,3 +1,3 @@
 from lib.api.compatibility import register_module
 
-register_module("concurrent.futures", "script.module.futures")
+register_module("concurrent.futures", py2_module="script.module.futures")
