@@ -79,30 +79,12 @@ jobs:
       - name: Zip docs
         id: zip_docs
         run: |
-          asset_name="flix-docs-html-${GITHUB_REF/refs\/tags\//}"
+          asset_name="flix-docs-html-"${{ github.ref_name }}""
           mv flix-docs-html "${asset_name}"
           zip -9 -r "${asset_name}.zip" "${asset_name}"
           echo "asset_name=${asset_name}.zip" >>"${GITHUB_OUTPUT}"
 
       - name: Perform release
-        id: create_release
-        uses: actions/create-release@v1
+        run: gh release create "${{ github.ref_name }}" "./${{ steps.zip_docs.outputs.asset_name }}" --notes "${{ needs.build.outputs.changelog }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: ${{ github.ref }}
-          body: ${{ needs.build.outputs.changelog }}
-          draft: false
-          prerelease: false
-
-      - name: Upload Release Asset
-        id: upload-release-asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./${{ steps.zip_docs.outputs.asset_name }}
-          asset_name: ${{ steps.zip_docs.outputs.asset_name }}
-          asset_content_type: application/zip
