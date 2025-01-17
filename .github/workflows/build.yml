@@ -85,6 +85,6 @@ jobs:
           echo "asset_name=${asset_name}.zip" >>"${GITHUB_OUTPUT}"
 
       - name: Perform release
-        run: gh release create "${{ github.ref_name }}" "./${{ steps.zip_docs.outputs.asset_name }}" --notes "${{ needs.build.outputs.changelog }}"
+        run: gh release create "${{ github.ref_name }}" "./${{ steps.zip_docs.outputs.asset_name }}" --repo "${{ github.repository }}" --notes "${{ needs.build.outputs.changelog }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
