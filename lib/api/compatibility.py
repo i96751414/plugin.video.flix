@@ -81,24 +81,22 @@ def compare_debian_version(a, b):
     a_components = _digits_re.split(a)
     b_components = _digits_re.split(b)
     for i in range(min(len(a_components), len(b_components))):
-        comparator = _str_cmp if i % 2 == 0 else _cmp
-        c = comparator(a_components[i], b_components[i])
+        if i % 2 == 0:
+            a_str_components = a_components[i].split("~")
+            b_str_components = b_components[i].split("~")
+            for j in range(min(len(a_str_components), len(b_str_components))):
+                c = compare(a_str_components[j], b_str_components[j])
+                if c != 0:
+                    return c
+            c = compare(len(b_str_components), len(a_str_components))
+        else:
+            c = compare(int(a_components[i]), int(b_components[i]))
         if c != 0:
             return c
-    return _cmp(len(a_components), len(b_components))
+    return compare(len(a_components), len(b_components))
 
 
-def _str_cmp(a, b):
-    a_components = a.split("~")
-    b_components = b.split("~")
-    for i in range(min(len(a_components), len(b_components))):
-        c = _cmp(a_components[i], b_components[i])
-        if c != 0:
-            return c
-    return _cmp(len(b_components), len(a_components))
-
-
-def _cmp(a, b):
+def compare(a, b):
     if a == b:
         ret = 0
     elif a < b:
