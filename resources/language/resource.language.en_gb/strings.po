@@ -138,6 +138,10 @@ msgctxt "#30029"
 msgid "Save last chosen result"
 msgstr ""
 
+msgctxt "#30030"
+msgid "Store subtitles"
+msgstr ""
+
 # Navigation
 msgctxt "#30100"
 msgid "Discover"

@@ -2,7 +2,9 @@ import logging
 import os
 import sys
 import time
+from contextlib import closing
 from datetime import timedelta
+from shutil import copyfileobj, copy
 
 import requests
 import unicodedata
@@ -11,11 +13,11 @@ import xbmcgui
 import xbmcplugin
 from cached import memory_cached
 
-from lib.api.flix.kodi import ADDON_ID, ADDON_DATA, ADDON_VERSION
+from lib.api.flix.kodi import ADDON_ID, ADDON_VERSION, translate_path
 from lib.api.flix.utils import assure_unicode
 from lib.opensubtitles.rest import OpenSubtitles, SearchPayload, DownloadRequest
 from lib.opensubtitles.utils import calculate_hash
-from lib.settings import get_os_username, get_os_password, get_os_folder
+from lib.settings import get_os_username, get_os_password, get_os_folder, store_subtitle
 
 try:
     from urllib.parse import parse_qs, urlencode
@@ -70,12 +72,6 @@ def get_language_flag(language):
 
 class SubtitlesService(object):
     def __init__(self, handle=None, params=None):
-        self._subtitles_dir = get_os_folder()
-        if not self._subtitles_dir or not os.path.isdir(self._subtitles_dir):
-            self._subtitles_dir = os.path.join(ADDON_DATA, "subtitles")
-            if not os.path.exists(self._subtitles_dir):
-                os.makedirs(self._subtitles_dir)
-
         self._handle = handle or int(sys.argv[1])
         self._params = params or parse_qs(sys.argv[2].lstrip("?"))
         self._api = OpenSubtitles(ADDON_ID, ADDON_VERSION)
@@ -164,14 +160,34 @@ class SubtitlesService(object):
 
     def download(self, file_id):
         result = self._api.download_subtitle(DownloadRequest(file_id=file_id))
-        path = os.path.join(self._subtitles_dir, result.file_name)
+        _, ext = os.path.splitext(result.file_name)
+        download_path = temp_path = os.path.join(self._temp_dir, "TempSubtitle." + ext)
 
-        r = requests.get(result.link)
-        r.raise_for_status()
-        with open(path, "wb") as f:
-            f.write(r.content)
+        if store_subtitle():
+            subtitles_dir = get_os_folder()
+            if subtitles_dir and os.path.isdir(subtitles_dir):
+                download_path = os.path.join(subtitles_dir, result.file_name)
+                logging.debug("Going to download subtitle to %s", download_path)
+            else:
+                logging.error("Invalid subtitles directory provided: %s", subtitles_dir)
 
-        xbmcplugin.addDirectoryItem(self._handle, path, xbmcgui.ListItem(label=result.file_name))
+        with closing(requests.get(result.link, stream=True)) as r:
+            r.raise_for_status()
+            r.raw.decode_content = True
+            with open(download_path, "wb") as f:
+                copyfileobj(r.raw, f)
+
+        if temp_path is not download_path:
+            copy(download_path, temp_path)
+
+        xbmcplugin.addDirectoryItem(self._handle, temp_path, xbmcgui.ListItem(label=result.file_name))
+
+    @property
+    def _temp_dir(self):
+        temp_dir = os.path.join(translate_path("special://temp"), ADDON_ID)
+        if not os.path.exists(temp_dir):
+            os.makedirs(temp_dir)
+        return temp_dir
 
     def login(self):
         self._api.login(get_os_username(), get_os_password())

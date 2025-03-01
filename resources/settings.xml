@@ -44,6 +44,8 @@
     <category label="OpenSubtitles">
         <setting id="os_username" label="30009" type="text" default=""/>
         <setting id="os_password" label="30010" type="text" option="hidden" default=""/>
-        <setting id="os_folder" label="30011" type="folder" source="auto" option="writeable"/>
+        <setting id="store_subtitle" type="bool" label="30030" default="false"/>
+        <setting id="os_folder" label="30011" type="folder" source="auto" option="writeable"
+                 enable="eq(-1,true)" subsetting="true"/>
     </category>
 </settings>

@@ -49,6 +49,10 @@ def get_os_folder():
     return translate_path(get_setting("os_folder"))
 
 
+def store_subtitle():
+    return get_boolean_setting("store_subtitle")
+
+
 def get_scraper_threads():
     return get_int_setting("scraper_threads")
 
