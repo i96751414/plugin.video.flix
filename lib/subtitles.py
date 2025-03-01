@@ -171,7 +171,7 @@ class SubtitlesService(object):
         with open(path, "wb") as f:
             f.write(r.content)
 
-        xbmcplugin.addDirectoryItem(self._handle, path, xbmcgui.ListItem(label=result.file_name))
+        xbmcplugin.addDirectoryItem(self._handle, path, xbmcgui.ListItem(label=path))
 
     def login(self):
         self._api.login(get_os_username(), get_os_password())
