@@ -23,8 +23,8 @@
         <summary lang="en">Flix - A movie scraper for Kodi</summary>
         <description lang="en">Flix is a movie scraper which allows for custom providers.</description>
         <news>
-- Update OpenSubtitles API key
-- Fix OpenSubtitles API rate limit being exceeded on login
+- Fix subtitles download
+- Update compatibility module
         </news>
         <assets>
             <icon>icon.png</icon>
