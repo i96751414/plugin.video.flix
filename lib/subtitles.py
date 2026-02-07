@@ -2,11 +2,9 @@ import logging
 import os
 import sys
 import time
-from contextlib import closing
 from datetime import timedelta
-from shutil import copyfileobj, copy
+from shutil import copy
 
-import requests
 import unicodedata
 import xbmc
 import xbmcgui
@@ -171,11 +169,7 @@ class SubtitlesService(object):
             else:
                 logging.error("Invalid subtitles directory provided: %s", subtitles_dir)
 
-        with closing(requests.get(result.link, stream=True)) as r:
-            r.raise_for_status()
-            r.raw.decode_content = True
-            with open(download_path, "wb") as f:
-                copyfileobj(r.raw, f)
+        self._api.download_subtitle_content(result.link, download_path)
 
         if temp_path is not download_path:
             copy(download_path, temp_path)

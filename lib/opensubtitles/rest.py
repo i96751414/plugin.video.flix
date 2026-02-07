@@ -1,5 +1,6 @@
 import json
 from contextlib import closing
+from shutil import copyfileobj
 
 import requests
 
@@ -121,6 +122,15 @@ class OpenSubtitles(object):
     def download_subtitle(self, payload):
         return DownloadResponse.from_data(
             self._request("POST", "download", params=payload.to_dict(), headers=self._login_headers), strict=True)
+
+    def download_subtitle_content(self, subtitle_url, download_path):
+        with closing(self._session.request("GET", subtitle_url, stream=True)) as r:
+            if r.status_code >= 400:
+                raise OpenSubtitlesError("HTTP {}: {}".format(r.status_code, r.reason))
+
+            r.raw.decode_content = True
+            with open(download_path, "wb") as f:
+                copyfileobj(r.raw, f)
 
     @property
     def _login_headers(self):
